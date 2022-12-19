@@ -1,0 +1,24 @@
+﻿
+# ignore the settings folder and files for VSCode and PSS
+.vscode/*
+*.psproj
+*TempPoint*
+
+# Ignore staging info from Visual Studio
+library/SecretManagement.NetwrixPasswordSecure/.vs/*
+library/SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure/bin/*
+library/SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure/obj/*
+
+# ignore PowerShell Studio MetaData
+SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure.psproj
+SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure.psproj.bak
+SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure.psprojs
+SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure.psproj
+
+# ignore the TestResults
+TestResults/*
+
+# ignore the publishing Directory
+publish/*
+SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure.Extension/bin/Newtonsoft.Json.dll
+SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure.Extension/bin/PsrApi.dll
