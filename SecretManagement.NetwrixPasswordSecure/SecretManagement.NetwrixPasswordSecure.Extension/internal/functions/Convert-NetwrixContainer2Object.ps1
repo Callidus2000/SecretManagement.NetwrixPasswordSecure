@@ -20,6 +20,8 @@
     End {
         Write-PSFMessage "Converting $($Containers.Count) containers"
         foreach ($con in $Containers) {
+            Write-PSFMessage "Collecting info hashtable for Container.id=$($con.id), .name=$($con.Info.ContainerName)"
+
             $hash = [ordered]@{
                 name = $con.Info.ContainerName
                 id=$con.id
@@ -32,7 +34,7 @@
                     Default { $hash."$($child.Name)" = $child.Value}
                 }
             }
-            if ($IncludeCredential -and $ContainerManager -ne $null){
+            if ($IncludeCredential -and $null -ne $ContainerManager){
                 Write-PSFMessage "Creating Credential Object"
                 $securePassword = $ContainerManager.GetContainerItemWithSecretValue($hash.passwordId) | Wait-Task
 
@@ -45,7 +47,8 @@
                 $hash.Credential=$credObject
             }
             if ($AsSecretInformation) {
-                $results+=[Microsoft.PowerShell.SecretManagement.SecretInformation]::new(
+                Write-PSFMessage "Creating SecretManagement.SecretInformation"
+                $results += [Microsoft.PowerShell.SecretManagement.SecretInformation]::new(
                     $hash.name, # Name of secret
                     "PSCredential", # Secret data type [Microsoft.PowerShell.SecretManagement.SecretType]
                     $VaultName, # Name of vault

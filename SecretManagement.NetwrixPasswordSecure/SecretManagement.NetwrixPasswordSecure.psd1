@@ -44,7 +44,9 @@
 	# FormatsToProcess = @('xml\SecretManagement.NetwrixPasswordSecure.Format.ps1xml')
 
 	# Functions to export from this module
-	FunctionsToExport = ''
+	FunctionsToExport = @(
+		'Register-NetwrixSecureVault'
+	)
 
 	# Cmdlets to export from this module
 	CmdletsToExport = ''

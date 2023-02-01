@@ -1,4 +1,5 @@
 ﻿function Wait-Task {
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory, ValueFromPipeline)]
         [System.Threading.Tasks.Task[]]$Task
@@ -13,8 +14,17 @@
     }
 
     End {
-        While (-not [System.Threading.Tasks.Task]::WaitAll($Tasks, 200)) {}
-        $Tasks.ForEach( { $_.GetAwaiter().GetResult() })
+        try {
+            While (-not [System.Threading.Tasks.Task]::WaitAll($Tasks, 200)) {}
+            $Tasks.ForEach( { $_.GetAwaiter().GetResult() })
+        }
+        catch {
+            # Write-PSFMessage -Level Host "$_"
+            if ($PSBoundParameters['Debug']) {
+                Write-PSFMessage "Tasks= $($Tasks|json)"
+            }
+            throw $_
+        }
     }
 }
 

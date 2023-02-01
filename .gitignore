@@ -20,5 +20,5 @@ TestResults/*
 
 # ignore the publishing Directory
 publish/*
-SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure.Extension/bin/Newtonsoft.Json.dll
-SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure.Extension/bin/PsrApi.dll
+SecretManagement.NetwrixPasswordSecure/SecretManagement.NetwrixPasswordSecure.Extension/bin/*.dll
+
