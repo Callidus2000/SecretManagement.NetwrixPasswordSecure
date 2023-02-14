@@ -24,3 +24,6 @@ $moduleRoot = Split-Path (Split-Path $PSScriptRoot)
 
 # Load License
 "$moduleRoot\internal\scripts\license.ps1"
+
+# Configure additional console logging
+"$moduleRoot\internal\scripts\console_logging.ps1"
