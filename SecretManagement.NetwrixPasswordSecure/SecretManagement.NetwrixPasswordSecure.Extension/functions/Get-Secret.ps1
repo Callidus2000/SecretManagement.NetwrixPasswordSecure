@@ -5,14 +5,17 @@
         [string] $VaultName,
         [hashtable] $AdditionalParameters
     )
+    Write-Host "HHHHH"
     $AdditionalParameters = @{} + $AdditionalParameters
     if ($AdditionalParameters.Verbose) { $VerbosePreference = 'continue' }
 
-    Write-PSFMessage "Get-Secret, Name=$Filter, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
+    Write-PSFMessage "Get-Secret, Name=$Name, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
     $credentials = Get-NetwrixContainer -Filter $Name -VaultName $VaultName -AdditionalParameters $AdditionalParameters -ReturnType Credential
     if ($credentials.Count -gt 1) {
         Write-PSFMessage -Level Error 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id' -Target "$Name"
-        throw 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id'
+        return
+        # DO NOT THROW an exception; if you do it the given error message will never make it to the console
+        # throw 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id'
     }
     return $credentials | Select-Object -First 1
     # Write-PSFMessage -Level Host "Get-Secret $Name from $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"

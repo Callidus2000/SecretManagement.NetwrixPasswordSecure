@@ -9,7 +9,7 @@
     if ($AdditionalParameters.Verbose) { $VerbosePreference = 'continue' }
 
     Write-PSFMessage "Get-SecretInfo, Filter=$Filter, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
-    Get-NetwrixContainer -Filter $Filter -VaultName $VaultName -AdditionalParameters $AdditionalParameters -ReturnType SecretInformation
+    return Get-NetwrixContainer -Filter $Filter -VaultName $VaultName -AdditionalParameters $AdditionalParameters -ReturnType SecretInformation
 
     # if (-not (Test-SecretVault -VaultName $vaultName -AdditionalParameters $AdditionalParameters)) {
     #     Write-PSFMessage -Level Error "${vaultName}: Failed to unlock the vault"

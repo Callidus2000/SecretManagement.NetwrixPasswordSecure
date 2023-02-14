@@ -18,13 +18,14 @@
     }
 
     End {
-        Write-PSFMessage "Converting $($Containers.Count) containers"
+        Write-PSFMessage "Converting $($Containers.Count) containers to temporal hashtable"
+        $tempHashList=@()
         foreach ($con in $Containers) {
             Write-PSFMessage "Collecting info hashtable for Container.id=$($con.id), .name=$($con.Info.ContainerName)"
 
             $hash = [ordered]@{
                 name = $con.Info.ContainerName
-                id=$con.id
+                id=$con.id.guid
             }
             foreach ($child in $con.Items) {
                 switch ($child.ContainerItemType) {
@@ -34,6 +35,19 @@
                     Default { $hash."$($child.Name)" = $child.Value}
                 }
             }
+            $tempHashList+=$hash
+        }
+        Write-PSFMessage "Created $($tempHashList.count) temp hashtables"
+        # The name of the secret infos may not occur more than one, checking this possibility and modifying the corresponding names
+        $entriesWithDuplicateNames = $tempHashList | Group-Object -Property name | Where-Object count -gt 1
+        foreach ($group in $entriesWithDuplicateNames) {
+            Write-PSFMessage "The Secret with the name $($group.Name) occurs $($group.Count) times, adding the GUID to the name"
+            foreach ($info in $group.Group){
+                $info.name += " [$($info.id)]"
+            }
+        }
+
+        foreach ($hash in $tempHashList){
             if ($IncludeCredential -and $null -ne $ContainerManager){
                 Write-PSFMessage "Creating Credential Object"
                 $securePassword = $ContainerManager.GetContainerItemWithSecretValue($hash.passwordId) | Wait-Task
