@@ -1,5 +1,5 @@
 ﻿if(Get-PSFConfigValue -FullName 'SecretManagement.NetwrixPasswordSecure.Extension.ConsoleLogging.enabled' -Fallback $false){
-    Write-PSFMessage "Configure Console Logging" -Level Host
+    Write-PSFMessage "Configure Console Logging"
     $providerParam=@{
         Name="console"
         Enabled=$true
@@ -8,9 +8,9 @@
         MaxLevel=Get-PSFConfigValue -FullName 'SecretManagement.NetwrixPasswordSecure.Extension.ConsoleLogging.MaxLevel'
 
     }
-    Write-PSFMessage "Configure Console Logging with Param=$($providerParam|ConvertTo-Json -Compress)" -Level Host
+    Write-PSFMessage "Configure Console Logging with Param=$($providerParam|ConvertTo-Json -Compress)"
     Set-PSFLoggingProvider @providerParam -IncludeModules 'SecretManagement.NetwrixPasswordSecure.Extension'
 
 }else{
-    Write-PSFMessage "NOT Configure Console Logging" -Level Host
+    Write-PSFMessage "NOT Configure Console Logging"
 }

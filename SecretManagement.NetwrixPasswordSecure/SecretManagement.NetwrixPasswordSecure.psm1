@@ -1,4 +1,5 @@
-﻿Write-PSFMessage -Level Host "Running SecretManagement.NetwrixPasswordSecure.psm1"
+﻿#TODO Level ändern
+Write-PSFMessage -Level Host "Running SecretManagement.NetwrixPasswordSecure.psm1"
 $script:ModuleRoot = $PSScriptRoot
 $script:ModuleVersion = (Import-PowerShellDataFile -Path "$($script:ModuleRoot)\SecretManagement.NetwrixPasswordSecure.psd1").ModuleVersion
 
