@@ -6,11 +6,11 @@
         [hashtable] $AdditionalParameters,
         [String]$NewUserName,
         [String]$NewMemo,
-        [String]$NewName,
+        [String]$NewText,
         [securestring]$NewPassword
     )
     $AdditionalParameters = @{} + $AdditionalParameters
-
+    # TODO: Auskommentierten Code entfernen
     Write-PSFMessage "Update-NetwrixContainer, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress), ReturnType=$ReturnType"
 
     if (-not (Test-SecretVault -VaultName $vaultName -AdditionalParameters $AdditionalParameters)) {
@@ -28,7 +28,7 @@
         # $hash = [ordered]@{
         #     name = $con.Info.ContainerName
         #     id   = $con.id.guid
-        # }
+        # }ContainerItemText
         foreach ($child in $con.Items) {
             $newPropertyName = $child.ContainerItemType -replace 'ContainerItem', 'New'
             try {
@@ -43,35 +43,26 @@
                 continue
             }
             switch ($newPropertyName) {
-                # ContainerItemUserName {
-                #     # $hash.userName = $child.Value
-                # }
                 NewPassword {
                     $plainTextPassword = [PSCredential]::new('SecureString', $NewPassword).GetNetworkCredential().Password
                     Write-PSFMessage "Aktualisiere Kennwort auf $plainTextPassword"
                     $child.PlainTextValue = $plainTextPassword
                     # $hash.passwordId = $child.id
                 }
-                # ContainerItemMemo {
-                #     # $hash.memo = $child.Value
+                # NewUserName {
+                #     $child.Value=$newPropertyValue
+                # }
+                # NewMemo {
+                # $child.Value=$newPropertyValue
+                # }
+                # $NewName {
+                # $child.Value=$newPropertyValue
                 # }
                 Default {
-
                     Write-PSFMessage "Update property $_ with param $newPropertyName and value $newPropertyValue"
+                    $child.Value = $newPropertyValue
                     # $hash."$($child.Name)" = $child.Value
                 }
-                # private static async Task UpdatePassword(PsrContainer updatePassword)
-                # {
-                # var textField = updatePassword.Items.FirstOrDefault(ci => ci.ContainerItemType == PsrContainerItemType.if (textField != null) textField.Value = "MyPsrApiPassword_UPDATE";
-                # var passwordField = updatePassword.Items.FirstOrDefault(ci => ci.IsPasswordItem());
-                # if (passwordField != null)
-                # {
-                # var newPassword = _psrApi.PasswordManager.GeneratePhoneticPassword(20, 3, PasswordGeneratorSeparator.passwordField.PlainTextValue = "UPDATED_SECRET_PASSWORD_" + newPassword;
-                # }
-                # await _psrApi.ContainerManager.UpdateContainer(updatePassword);
-                # Console.WriteLine($"Password {updatePassword.Id} updated");
-                # }
-
             }
         }
         $conMan.UpdateContainer($con)
