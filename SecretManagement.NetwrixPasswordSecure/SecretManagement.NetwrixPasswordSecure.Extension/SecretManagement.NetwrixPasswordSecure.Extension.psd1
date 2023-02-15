@@ -30,10 +30,11 @@
 	)
 
 	# Assemblies that must be loaded prior to importing this module
-	RequiredAssemblies = @(
-		'bin\Newtonsoft.Json.dll'
-		'bin\PsrApi.dll'
-		)
+	RequiredAssemblies = @()
+	# RequiredAssemblies = @(
+	# 	'bin\Newtonsoft.Json.dll'
+	# 	'bin\PsrApi.dll'
+	# 	)
 
 	# Type files (.ps1xml) to be loaded when importing this module
 	# TypesToProcess = @('xml\SecretManagement.NetwrixPasswordSecure.Extension.Types.ps1xml')

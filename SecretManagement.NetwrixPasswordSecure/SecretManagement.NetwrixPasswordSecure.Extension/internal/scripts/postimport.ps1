@@ -27,3 +27,6 @@ $moduleRoot = Split-Path (Split-Path $PSScriptRoot)
 
 # Configure additional console logging
 "$moduleRoot\internal\scripts\console_logging.ps1"
+
+# Check if the assemblies are provided
+"$moduleRoot\internal\scripts\checkassemblies.ps1"
