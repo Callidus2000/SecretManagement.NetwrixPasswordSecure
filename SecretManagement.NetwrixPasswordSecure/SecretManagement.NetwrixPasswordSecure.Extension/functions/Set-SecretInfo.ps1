@@ -6,25 +6,17 @@
         [string] $VaultName,
         [hashtable] $AdditionalParameters
     )
-    $AdditionalParameters = @{} + $AdditionalParameters
-    if ($AdditionalParameters.Verbose) { $VerbosePreference = 'continue' }
+    $updateParam = $PSBoundParameters | ConvertTo-PSFHashtable -Exclude 'Metadata'
     $settableKeys = @('Username', 'Password', 'Name', 'Memo')
     $unknownKeys = $Metadata.Keys | Where-Object { $settableKeys -notcontains $_ }
     if ($unknownKeys) {
         Write-PSFMessage -Level Warning "Set-SecretInfo Metadata-HashTable may contain the following keys: $($settableKeys -join ',')"
         Write-PSFMessage -Level Warning "Unknown keys in Metadata-HashTable which will be ignored: $($unknownKeys -join ',')"
     }
-    $updateParam = $Metadata | ConvertTo-PSFHashtable -Include $settableKeys -Remap @{'Username' = 'NewUsername'; 'Name' = 'NewText'; 'Password' = 'NewPassword' ; 'Memo' = 'NewMemo' }
-    # $Metadata = @{murks = 'Bar'; 'Password' = 'Hubba'; 'Name' = 'foo'; 'Memo' = 'myNote' }
+    $updateParam += $Metadata | ConvertTo-PSFHashtable -Include $settableKeys -Remap @{'Username' = 'NewUsername'; 'Name' = 'NewText'; 'Password' = 'NewPassword' ; 'Memo' = 'NewMemo' }
 
-    Write-PSFMessage "Set-SecretInfo, Name=$Name, Vault=$VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress), Metadata=$($updateParam|ConvertTo-Json -Compress)"
-    $updateParam.container = Get-NetwrixContainer -Filter $Name -VaultName $VaultName -AdditionalParameters $AdditionalParameters -ReturnType NonModifiedContainer
-    if ($updateParam.container.count -gt 1) {
-        Write-PSFMessage -Level Error 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id'
-        Wait-PSFMessage
-        throw 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id'
-    }
-    $updateParam.VaultName=$VaultName
-    $updateParam.AdditionalParameters=$AdditionalParameters
+    Write-PSFMessage "#Setting secretInfo with `$updateParam=$($updateParam|ConvertTo-Json -Compress)"
     Update-NetwrixContainer @updateParam
+    Wait-PSFMessage
+    return $true
 }

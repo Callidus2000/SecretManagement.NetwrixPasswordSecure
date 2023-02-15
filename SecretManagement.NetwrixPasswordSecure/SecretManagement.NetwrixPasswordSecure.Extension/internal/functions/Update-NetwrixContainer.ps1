@@ -1,7 +1,7 @@
 ﻿function Update-NetwrixContainer {
     [CmdletBinding()]
     param (
-        $Container,
+        [String]$Name,
         [string]$VaultName,
         [hashtable]$AdditionalParameters,
         [String]$NewUserName,
@@ -9,13 +9,18 @@
         [String]$NewText,
         [securestring]$NewPassword
     )
-    $AdditionalParameters = @{} + $AdditionalParameters
     # TODO: Auskommentierten Code entfernen
-    Write-PSFMessage "Update-NetwrixContainer, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress), ReturnType=$ReturnType"
+    Write-PSFMessage "Update-NetwrixContainer, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
 
     if (-not (Test-SecretVault -VaultName $vaultName -AdditionalParameters $AdditionalParameters)) {
         Write-PSFMessage -Level Error "${vaultName}: Failed to unlock the vault"
         return $false
+    }
+    $container = Get-NetwrixContainer -Filter $Name -VaultName $VaultName -AdditionalParameters $AdditionalParameters -ReturnType NonModifiedContainer
+    if ($container.Count -gt 1) {
+        Write-PSFMessage -Level Error 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id'
+        Wait-PSFMessage
+        throw 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id'
     }
     $psrApi = (Get-Variable -Name "Vault_$VaultName" -Scope Script -ErrorAction Stop).Value
 
@@ -25,10 +30,6 @@
     foreach ($con in $Container) {
         Write-PSFMessage "Updating Container.id=$($con.id), .name=$($con.Info.ContainerName)"
 
-        # $hash = [ordered]@{
-        #     name = $con.Info.ContainerName
-        #     id   = $con.id.guid
-        # }ContainerItemText
         foreach ($child in $con.Items) {
             $newPropertyName = $child.ContainerItemType -replace 'ContainerItem', 'New'
             try {
@@ -47,21 +48,13 @@
                     $plainTextPassword = [PSCredential]::new('SecureString', $NewPassword).GetNetworkCredential().Password
                     Write-PSFMessage "Aktualisiere Kennwort auf $plainTextPassword"
                     $child.PlainTextValue = $plainTextPassword
-                    # $hash.passwordId = $child.id
                 }
                 # NewUserName {
-                #     $child.Value=$newPropertyValue
-                # }
                 # NewMemo {
-                # $child.Value=$newPropertyValue
-                # }
                 # $NewName {
-                # $child.Value=$newPropertyValue
-                # }
                 Default {
                     Write-PSFMessage "Update property $_ with param $newPropertyName and value $newPropertyValue"
                     $child.Value = $newPropertyValue
-                    # $hash."$($child.Name)" = $child.Value
                 }
             }
         }
