@@ -1,5 +1,44 @@
 ﻿function Update-NetwrixContainer {
+    <#
+    .SYNOPSIS
+    Updates a password container.
+
+    .DESCRIPTION
+    Updates a password container.
+
+    .PARAMETER Name
+    Name to be searched for.
+
+    .PARAMETER VaultName
+    The name of the secret vault.
+
+    .PARAMETER AdditionalParameters
+    Additional parameters which where configured while creating the vault.
+
+    .PARAMETER NewUserName
+    If used a new Username will be saved.
+
+    .PARAMETER NewMemo
+    If used a new Note will be saved.
+
+    .PARAMETER NewText
+    If used the name of the entry will be changed.
+
+    .PARAMETER NewPassword
+    If used a new Password will be saved.
+
+    .EXAMPLE
+    Update-NetwrixContainer -Name foo -NewText FooBar -VaultName $vaultName -AdditionalParameters $AdditionalParameters
+
+    Rename the entry 'foo' to 'foobar'
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseOutputTypeCorrectly', '')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessforStateChangingFunctions', '')]
     param (
         [String]$Name,
         [string]$VaultName,
@@ -9,7 +48,6 @@
         [String]$NewText,
         [securestring]$NewPassword
     )
-    # TODO: Auskommentierten Code entfernen
     Write-PSFMessage "Update-NetwrixContainer, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
 
     if (-not (Test-SecretVault -VaultName $vaultName -AdditionalParameters $AdditionalParameters)) {
@@ -58,6 +96,6 @@
                 }
             }
         }
-        $conMan.UpdateContainer($con)
+        $conMan.UpdateContainer($con)| Wait-Task
     }
 }

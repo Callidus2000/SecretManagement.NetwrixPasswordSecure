@@ -50,7 +50,6 @@
 		'Get-SecretInfo'
 		'Test-SecretVault'
 		'Unregister-SecretVault'
-		'Connect-KeepassDatabase'
 		'Unlock-SecretVault'
 		)
 

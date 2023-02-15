@@ -1,11 +1,39 @@
 ﻿function Convert-NetwrixContainer2Object {
+    <#
+    .SYNOPSIS
+    Converts already queried Password Containers to a HashTable or SecretInformation Array.
+
+    .DESCRIPTION
+    Converts already queried Password Containers to a HashTable or SecretInformation Array.
+
+    .PARAMETER Container
+    The container to be converted.
+
+    .PARAMETER ContainerManager
+    The already instanciated ContainerManager.
+
+    .PARAMETER IncludeCredential
+    Should the credentials be included
+
+    .PARAMETER AsSecretInformation
+    Return an array of SecretInformation objects instead HashTables.
+
+    .EXAMPLE
+    $containers | Convert-NetwrixContainer2Object -ContainerManager $conMan -AsSecretInformation
+
+    Converts the queried containers to SecretInformation objects suitable for Get-SecretInfo
+
+    .NOTES
+    General notes
+    #>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
     param(
         [Parameter(Mandatory, ValueFromPipeline)]
         [PsrApi.Data.PsrContainer[]]$Container,
         [PsrApi.Managers.ContainerManager]$ContainerManager,
         [switch]$IncludeCredential,
         [switch]$AsSecretInformation
-
     )
 
     Begin {
@@ -75,7 +103,3 @@
         return $results
     }
 }
-
-# $myCon=$monitoringPasswordContainer | Select-Object -first 1
-# $mycon.Items | Select-Object name, value, ContainerItemType
-# $monitoringPasswordContainer | Select-Object -first 1 | Convert-NetwrixContainer2Object -IncludeCredential -ContainerManager $conMan -Verbose

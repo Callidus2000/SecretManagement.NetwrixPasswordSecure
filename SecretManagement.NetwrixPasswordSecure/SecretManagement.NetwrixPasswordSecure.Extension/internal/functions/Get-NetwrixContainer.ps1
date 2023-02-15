@@ -1,5 +1,37 @@
 ﻿function Get-NetwrixContainer {
+    <#
+    .SYNOPSIS
+    Query a password container from the server.
+
+    .DESCRIPTION
+    Query a password container from the server.
+
+    .PARAMETER Filter
+    Filter for the search
+
+    .PARAMETER VaultName
+    The name of the secret vault.
+
+    .PARAMETER AdditionalParameters
+    Additional parameters which where configured while creating the vault.
+
+    .PARAMETER ReturnType
+    What type should be returned?
+    'SecretInformation' returns an array of SecretInformation objects
+    'NonModifiedContainer' returns the unmodified .NET object from the query.
+    'Credential' returns only the Credential-Object
+    'MetaHash' returns a HashTable with the scrubbed info.
+
+    .EXAMPLE
+    Get-NetwrixContainer -Filter foo -VaultName $VaultName -AdditionalParameters $AdditionalParameters -ReturnType SecretInformation
+
+    Query the infos of all 'foo' entries.
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseOutputTypeCorrectly', '')]
     param (
         [string] $Filter,
         [string] $VaultName,

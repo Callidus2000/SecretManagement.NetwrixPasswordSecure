@@ -1,5 +1,26 @@
 ﻿
 function Test-SecretVault {
+    <#
+    .SYNOPSIS
+    Tests if the vault is configured correctly and if it is unlocked.
+
+    .DESCRIPTION
+    Tests if the vault is configured correctly and if it is unlocked.
+
+    .PARAMETER VaultName
+    The name of the secret vault.
+
+    .PARAMETER AdditionalParameters
+    Additional parameters which where configured while creating the vault.
+
+    .EXAMPLE
+    Test-SecretVault -VaultName $vaultname
+
+    Returns true if successfull
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
     param (
         [string] $VaultName,
@@ -8,7 +29,6 @@ function Test-SecretVault {
     $AdditionalParameters =@{}+ $AdditionalParameters
     if ($AdditionalParameters.Verbose) { $VerbosePreference = 'continue' }
     Write-PSFMessage  "Test-SecretVault from $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
-
 
     Write-PSFMessage -Level Verbose "SecretManagement: Testing Vault ${VaultName}"
     $vault = Get-SecretVault $VaultName -ErrorAction Stop
@@ -37,11 +57,10 @@ function Test-SecretVault {
 
     #Basic Sanity Checks
     if (-not $VaultName) {
-        Write-PSFMessage -Level Error 'Keepass: You must specify a Vault Name to test'
+        Write-PSFMessage -Level Error 'You must specify a Vault Name to test'
         return $false
     }
-    Write-PSFMessage "##Connecting to Database with TType $($AdditionalParameters.GetType())"
-    Write-PSFMessage "##Connecting to Database with user $($AdditionalParameters.Username)"
+    Write-PSFMessage "##Connecting to Database with User $($AdditionalParameters.Username)"
 
     $neccessaryAdditionalAttributes=@( "database","port" , "userName" , "server")
     $missingAttributes=@()
@@ -79,7 +98,6 @@ function Test-SecretVault {
         Set-Variable -Name "Vault_$VaultName" -Scope Script -Value $psrApi
         return $true
     }
-
 
     #If we get this far something went wrong
     Write-PSFMessage -Level Error "Unable to open connection to the server"

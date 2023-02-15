@@ -1,4 +1,22 @@
 ﻿function Wait-Task {
+    <#
+    .SYNOPSIS
+    Helper function for waiting of tasks to be finished.
+
+    .DESCRIPTION
+    Helper function for waiting of tasks to be finished.
+
+    .PARAMETER Task
+    The task to be waited for.
+
+    .EXAMPLE
+    $conMan.UpdateContainer($con)| Wait-Task
+
+    Waits until the update is finished.
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, ValueFromPipeline)]
@@ -21,7 +39,7 @@
         catch {
             # Write-PSFMessage -Level Host "$_"
             if ($PSBoundParameters['Debug']) {
-                Write-PSFMessage "Tasks= $($Tasks|json)"
+                Write-PSFMessage "Tasks= $($Tasks|ConvertTo-Json)"
             }
             throw $_
         }

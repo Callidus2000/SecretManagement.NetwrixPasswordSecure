@@ -1,4 +1,40 @@
 ﻿function Get-Secret {
+    <#
+    .SYNOPSIS
+    Query a single secret.
+
+    .DESCRIPTION
+    Query a single secret.
+
+    .PARAMETER Name
+    Name to be searched for.
+
+    .PARAMETER VaultName
+    The name of the secret vault.
+
+    .PARAMETER AdditionalParameters
+    Additional parameters which where configured while creating the vault.
+
+    .EXAMPLE
+    Get-Secret -Vault $Vaultname -Name foo
+
+    Returns the stored secret for the entry foo.
+
+    .EXAMPLE
+    Get-Secret -Vault $Vaultname -Name foobar
+    [Error] Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id
+    Get-SecretInfo -Vault $Vaultname -Name foobar
+    Name                                          Type         VaultName
+    ----                                          ----         ---------
+    foobar [5dd937c4-b0a0-ed11-a876-005056bce948] PSCredential PWSafeInt
+    foobar [ef2fe11d-b0a0-ed11-a876-005056bce948] PSCredential PWSafeInt
+    Get-Secret -Vault $Vaultname -Name ef2fe11d-b0a0-ed11-a876-005056bce948
+
+    Returns the stored secret for the second entry foobar.
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
     param (
         [string] $Name,
@@ -16,38 +52,5 @@
         throw 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id'
     }
     return $credentials | Select-Object -First 1
-    # Write-PSFMessage -Level Host "Get-Secret $Name from $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
-    # Write-PSFMessage "Searching Entry with Name=$Name"
-    # if (-not (Test-SecretVault -VaultName $vaultName -AdditionalParameters $AdditionalParameters)) {
-    #     Write-PSFMessage -Level Error 'There appears to be an issue with the vault (Test-SecretVault returned false)' -Target "$Name"
-    #     throw 'There appears to be an issue with the vault (Test-SecretVault returned false)'
-    # }
-
-    # if (-not $Name) {
-    #     Write-PSFMessage -Level Error 'You must specify a secret Name' -Target "$Name"
-    #     throw 'You must specify a secret Name'
-    # }
-
-    # $KeepassParams = GetKeepassParams $VaultName $AdditionalParameters
-
-    # if ($Name) { $KeePassParams.Title = $Name }
-    # $keepassGetResult = Get-SecretInfo -Vault $vaultName -Filter $Name -AsKPPSObject
-
-    # if ($null -eq $keepassGetResult) {
-    #     Write-PSFMessage "No Keepass Entry found" -Target $Name
-    #     return
-    # }
-    # if ($keepassGetResult.count -gt 1) {
-    #     Write-PSFMessage -Level Error "Multiple ambiguous entries found for $Name, please remove the duplicate entry or specify the full path of the secret" -Target "$Name"
-    #     throw "Multiple ambiguous entries found for $Name, please remove the duplicate entry or specify the full path of the secret"
-    # }
-    # $result = if (-not $keepassGetResult.Username) {
-    #     $keepassGetResult.Password
-    # }
-    # else {
-    #     [PSCredential]::new($KeepassGetResult.UserName, $KeepassGetResult.Password)
-    # }
-    # return $result
-    # return [TestStore]::GetItem($Name, $AdditionalParameters)
 }
 

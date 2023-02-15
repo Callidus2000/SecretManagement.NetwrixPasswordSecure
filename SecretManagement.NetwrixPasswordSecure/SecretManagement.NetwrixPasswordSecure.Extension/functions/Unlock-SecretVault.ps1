@@ -1,4 +1,28 @@
 ﻿function Unlock-SecretVault {
+    <#
+    .SYNOPSIS
+    Unlocks the vault.
+
+    .DESCRIPTION
+    Unlocks the vault.
+
+    .PARAMETER Password
+    The password needed for unlocking.
+
+    .PARAMETER VaultName
+    The name of the secret vault.
+
+    .PARAMETER AdditionalParameters
+    Additional parameters which where configured while creating the vault.
+
+    .EXAMPLE
+    Unlock-SecretVault -VaultName $vaultName -Password (Read-Host -AsSecureString)
+
+    Unlocks the vault
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
     param (
         [SecureString] $Password,

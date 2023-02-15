@@ -1,4 +1,32 @@
 ﻿function Get-SecretInfo {
+    <#
+    .SYNOPSIS
+    Returns SecretmanagementInformation objects for the requested entries.
+
+    .DESCRIPTION
+    Returns SecretmanagementInformation objects for the requested entries.
+
+    .PARAMETER Filter
+    The name to be searched
+
+    .PARAMETER VaultName
+    The name of the secret vault.
+
+    .PARAMETER AdditionalParameters
+    Additional parameters which where configured while creating the vault.
+
+    .EXAMPLE
+    Get-SecretInfo -Vault $Vaultname -Name foobar
+    Name                                          Type         VaultName
+    ----                                          ----         ---------
+    foobar [5dd937c4-b0a0-ed11-a876-005056bce948] PSCredential PWSafeInt
+    foobar [ef2fe11d-b0a0-ed11-a876-005056bce948] PSCredential PWSafeInt
+
+    Returns the stored secret info.
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
     param (
         [string] $Filter,
@@ -10,25 +38,5 @@
 
     Write-PSFMessage "Get-SecretInfo, Filter=$Filter, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
     return Get-NetwrixContainer -Filter $Filter -VaultName $VaultName -AdditionalParameters $AdditionalParameters -ReturnType SecretInformation
-
-    # if (-not (Test-SecretVault -VaultName $vaultName -AdditionalParameters $AdditionalParameters)) {
-    #     Write-PSFMessage -Level Error "${vaultName}: Failed to unlock the vault"
-    #     return $false
-    # }
-    # $psrApi = (Get-Variable -Name "Vault_$VaultName" -Scope Script -ErrorAction Stop).Value
-
-    # $conMan = $psrApi.ContainerManager
-    # # Get a new filter
-    # $passwordListFilter = $conMan.GetContainerListFilter([PsrApi.Data.Enums.PsrContainerType]::Password, $true) | Wait-Task
-    # # Nach Inhalt filtern
-    # $contentFilter = $passwordListFilter.FilterGroups | Where-Object __type -eq 'ListFilterGroupContent'
-    # if ($contentFilter ) {
-    #     $contentFilter.SearchList[0].Search = $filter;
-    #     $contentFilter.SearchList[0].FilterActive = $true;
-    # }
-
-    # $SecretInformation = $conMan.GetContainerList([PsrApi.Data.Enums.PsrContainerType]::Password, $passwordListFilter, $null) | Wait-Task | Convert-NetwrixContainer2Object -ContainerManager $conMan -AsSecretInformation
-    # Write-PSFMessage "Found $($SecretInformation.Count) Password containers for filter $filter"
-    # return $SecretInformation
 }
 
