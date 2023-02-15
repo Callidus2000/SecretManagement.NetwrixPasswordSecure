@@ -2,8 +2,8 @@
     [CmdletBinding()]
     param (
         $Container,
-        [string] $VaultName,
-        [hashtable] $AdditionalParameters,
+        [string]$VaultName,
+        [hashtable]$AdditionalParameters,
         [String]$NewUserName,
         [String]$NewMemo,
         [String]$NewText,
@@ -21,8 +21,8 @@
 
     $conMan = $psrApi.ContainerManager
 
-    Write-PSFMessage "Found $($containers.Count) Password containers for filter $filter"
-    foreach ($con in $Containers) {
+    Write-PSFMessage "Found $($container.Count) Password containers for filter $filter"
+    foreach ($con in $Container) {
         Write-PSFMessage "Updating Container.id=$($con.id), .name=$($con.Info.ContainerName)"
 
         # $hash = [ordered]@{

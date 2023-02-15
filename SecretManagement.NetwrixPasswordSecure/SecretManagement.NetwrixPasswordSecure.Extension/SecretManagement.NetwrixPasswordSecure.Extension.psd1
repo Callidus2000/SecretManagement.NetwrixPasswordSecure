@@ -44,6 +44,7 @@
 	# Functions to export from this module
 	FunctionsToExport = @(
 		'Set-Secret'
+		'Set-SecretInfo'
 		'Get-Secret'
 		'Remove-Secret'
 		'Get-SecretInfo'
