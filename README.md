@@ -29,10 +29,10 @@
   </a>
 -->
 
-  <h3 align="center">Fortigate FortiManager Powershell Module</h3>
+  <h3 align="center">SecretManagement PowerShell Extensin for Netwrix PasswordSecure</h3>
 
   <p align="center">
-    This Powershell Module is a wrapper for the API of Fortigate FortiManager
+    This Powershell Module is an extension to the <a href="https://github.com/PowerShell/SecretManagement">Microsoft Secret Management Module</a>
     <br />
     <a href="https://github.com/Callidus2000/SecretManagement.NetwrixPasswordSecure"><strong>Explore the docs »</strong></a>
     <br />
@@ -77,10 +77,11 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This Powershell Module is a wrapper for the API of Fortnet FortiManager. Fortnet FortiManager is a 
-solution for managing multiple instances of Fortigate firewalls.
+This Powershell Module is an extension to the [Microsoft Secret Management Module](https://github.com/PowerShell/SecretManagement) for accessing secrets stored within the Netwrix Password Secure Server. It is a wrapper for the API which is only accessible by using a C# SDK provided by NetWrix __only to enterprise customers__. __The module is useless if you are no enterprise customer__ (regarding the license modell you are using).
 
-The API is documented in the [Fortinet Developer Network](https://fndn.fortinet.net/).
+
+
+The usage of the SDK is documented in the [Netwrix Helpcenter](https://helpcenter.netwrix.com/) filed under the keyword 'SDK'. You have to sideload/copy the SDK *.DLL files to a given location in order to get the module up to work (see [Installation](#installation)).
 
 
 ### Built With
@@ -99,11 +100,7 @@ To get a local copy up and running follow these simple steps.
 
 - Powershell 7.x (Core) (If possible get the latest version)  
   Maybe it's working under 5.1, just did not test it
-- A Fortinet FortiManager Manager and HTTPS enable with JSON API enable for the user
-  - Go on WebGUI of your FortiManager, on System Settings
-  - Go `Administrators`
-  - Click on `Create New`  
-  - and create a new user and don't forget to enable `JSON API Access` to `Read-Write`
+- A Password Secure Server with a user account
 
 ### Installation
 
