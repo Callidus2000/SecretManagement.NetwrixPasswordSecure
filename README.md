@@ -105,124 +105,91 @@ To get a local copy up and running follow these simple steps.
 ### Installation
 
 The releases are published in the Powershell Gallery, therefor it is quite simple:
-  ```powershell
-  Install-Module FortiManager -Force -AllowClobber
-  ```
-The `AllowClobber` option is currently necessary because of an issue in the current PowerShellGet module. Hopefully it will not be needed in the future any more.
+```powershell
+  install-module SecretManagement.NetwrixPasswordSecure -Scope CurrentUser
+```
+
+As the module 100% depends on the C# SDK API DLL Files you have to request them from the vendor. After acquiring the zipped files please extract them into the subdirectory `SecretManagement.NetwrixPasswordSecure.Extension\bin`. The local path is hinted by an error message if you try to import the module while the DLLs are missing:
+
+```Powershell
+Import-Module SecretManagement.NetwrixPasswordSecure
+WARNING: [15:47:39][<Unknown>] Required Assemblies (like PsrAPI.dll) are missing in the folder 'C:\Users\root\Documents\PowerShell\Modules\SecretManagement.NetwrixPasswordSecure\1.0.0\SecretManagement.NetwrixPasswordSecure.Extension\bin'. They are provided for *Enterprise* cutomers by the product vendor on request. Please unzip all provided *.DLL within this folder
+```
+### Internal Concepts
+#### Password Container
+Every entry is a container.
+
+#### Organizational Units (OU)
+Which is grouped in OUs
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-
-The module is a wrapper for the Fortinet FortiManager API. For getting started take a look at the integrated help of the included functions. As inspiration you can take a look at the use-cases which led to the development of this module.
-
-### Currently supported firewall object types (v2.0)
-The following types of objects can handled (the list is not exhaustive):
-
-| functionPrefix | `Get-FM*` | `New-FMObj*` | `Add-FM*` | `Update-FM*` | `Rename-FM*` | `Remove-FM*` |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
-| Address | X | X | X | X | X | X |
-| AddressGroup | X | X | X | X | X | X | 
-| FirewallPolicy | X | X | X | X | * | X | 
-| FirewallService | X | X | X | X | * | | 
-| FirewallInterfaces | X | X | X | X | X | X | 
-| DeviceInfo | X |   |   |   |   |   | 
-| Task | X |   |   |   |   |   | 
-| Firewall Hitcounts | X |   |   |   |   |   | 
-| ADOM LockStatus | X |   |   |   |   |   | 
-
-An * in Rename means there is no specific function for it, you may use the `Update-FM*` to do it manually.
-
-### Additional Meta Functions
-- `Connect-FM` - Connects to an instance
-- `Disconnect-FM` - Disconnects
-- `Get-FMAdomLockStatus` - Check if the DOM is locked
-- `Lock-FMAdom` - Lock the ADOM for changes
-- `Publish-FMAdomChange` - Publish those changes (aka `save`)
-- `Unlock-FMAdom` - Unlock to make it available for change to other users
-- `Get-FMFirewallHitCount` - How many hits does which rule get?
-- `Move-FMFirewallPolicy` - Move a policy before/after another one
-- `Convert-FMIpAddressToMaskLength` - Converts a IP Subnet-Mask to a Mask Length
-- `Convert-FMSubnetMask` - Converts a subnet mask between long and short-version
-- `Invoke-FMAPI` - The magical black box which handles the API requests
-
-## Use-Cases or Why was the module developed?
-### Background
-Our company uses the Fortinet Manager for administration of 8 production firewalls. The policies were separated into 8 policy packages and no policy package was the same. In a refactoring project we created a new firewall design based on 
-* categorizing the vlans into security levels
-* creating hierarchical address groups based on the security levels and locations
-* building new default policies based on those new objects
-
-### Part One
-First task was to import 400 new address objects from Excel. The business requirements were simple:
-* Login to the manager (**Connect-FM**)
-* Query existing addresses (**Get-FMAddress**) and address groups (**Get-FMADdressGroup**)
-* Create new objects for the API (**New-FMObjAddressGroup** and **New-FMObjAddress**) out of the excel file (Thanks to ImportExcel)
-* Lock the ADOM for writing (**Lock-FMAdom**) - **Breaking Change in v2.0.0** Provide the default RevisionNote as a parameter
-* Add the new address objects to the ADOM (**Add-FMAddress** and **Add-FMAddressGroup**)
-* Save the changes (**Publish-FMAdomChange**)
-* Unlock the ADOM after work (**UnlockFMAdom**)
-
-For testing purposes the antagonists of Add where needed (**Remove-FMAddress**, **Remove-FMAddressGroup**), and updating the objects would have been nice, too (you get it, **Update-***).
-### Part Two
-The new default address objects could be imported, the new default policy rules could be implemented... But where? We had 8 policy packages....
-
-One solution would have been to add the policies to the Global Header config... But beside the firewalls within the project scope the Manager appliance was also in charge of the main location firewalls which would receive the new policies, too. That's not desirable.
-
-New plan: 
-* Create a new policy package, add all firewall devices/vdoms to the new package
-* Create the new global policy rules
-* Foreach existing policy package
-  * Read the existing rules (**Get-FMFirewallPolicy**)
-  * Modify them (rename, add the previous "Installation Targets" as "Install On" attribute (scope member))
-  * Add the modified rule to the new policy package (**Add-FMFirewallPolicy**)
-* Apply the new Package to each VDOM
-  * The global rules would target all devices
-  * The prior copied rules would target specific VDOMs
-
-### Part three
-As the module has the ability to read/create/add Firewall policy rules, why not import the new global rules directly from excel? No problem, just had to implement the functions around Firewall Services (**Get/Add/Update-FMFirewallService**). Voila, every necessary task can be automated.
-
-# Example code
+First you have to register the SecretManagement Vault:
 ```Powershell
-# Connect
-$connection = Connect-FM -Credential $fortiCred -Url MyServer.MyCompany.com -verbose -Adom TEST
-
-# Import some data from excel
-$ipTable = Import-Excel -Path ".\ip-data.xlsx" -WorksheetName "addresses"
-$ipAddressNamesFromExcel = $ipTable | Select-Object -expandproperty "Name"
-$existingAddresses = Get-FMAddress -Connection $Connection -verbose -fields "name" | Select-Object -expandproperty name
-
-$missingAddresses = $ipAddressNamesFromExcel | Where-Object { $_ -notin $existingAddresses } | Sort-Object -Unique
-Write-PSFMessage -Level Host "$($existingAddresses.count) Adresses found in Forti, $($ipAddressNamesFromExcel.count) within Excel, missing $($missingAddresses.count)"
-$newFMAddresses = @()
-foreach ($newAddress in $missingAddresses) {
-    Write-PSFMessage -Level Host "Create address object: $newAddress"
-    $newFMAddresses += New-FMObjAddress -Name "$newAddress" -Type ipmask -Subnet "$newAddress"  -Comment "Created ByScript"
+# With the provided helper
+Register-NetwrixSecureVault -Server "myserver" -UserName "max.mustermann" -Database "PWS8" -vaultName "PWS"
+# Or by native command
+Register-SecretVault -Name "PWS" -ModuleName SecretManagement.NetwrixPasswordSecure -VaultParameters @{
+    server="myserver"
+    UserName="max.mustermann"
+    Database= "PWS8"
+    port=11016
 }
-Lock-FMAdom -Connection $connection -RevisionNote "Changes by API"
-try {
-    $newFMAddresses | add-fmaddress -connection $connection
-    Publish-FMAdomChange -Connection $connection
-}
-catch {
-    Write-PSFMessage -Level Warning "$_"
-}
-finally {
-    UnLock-FMAdom -Connection $connection
-}
-Disconnect-FM -connection $Connection
 ```
-If you need an overview of the existing commands use
-```powershell
-# List available commands
-Get-Command -Module FortiManager
+
+Lets pretend you've got just three entries stored in your server: `foo`, `hubba` and `hubba` (yes, a dupe regarding the name within different containers).
+```Powershell
+Get-Secret -Name foo
+
+UserName                     Password
+--------                     --------
+foo      System.Security.SecureString
+
+Get-Secret -Vault $Vaultname -Name hubba
+[Error] Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id
+Get-Secret: Unable to get secret hubba from vault PWSafeInt
+Get-Secret: The secret hubba was not found.
 ```
-everything else is documented in the module itself.
+Seen it? The SecretManagement Framework does not allow to query duplicate entries, in the concept (off-world) there rule uniqueness regarding the name attribute. As duplicate names can be used you have to acquire the GUID of the correct entry and query this record in particular
+
+```Powershell
+Get-SecretInfo -Name hubba |fl
+
+Name      : Hubba [5dd937c4-b0a0-ed11-a876-005056bce948]
+Type      : PSCredential
+VaultName : PWS
+Metadata  : {[userName, Foo], [id, 5dd937c4-b0a0-ed11-a876-005056bce948], [Beschreibung, Hubba], [memo, ]…}
+
+Name      : Hubba [ef2fe11d-b0a0-ed11-a876-005056bce948]
+Type      : PSCredential
+VaultName : PWS
+Metadata  : {[userName, hubba], [id, ef2fe11d-b0a0-ed11-a876-005056bce948], [Beschreibung, Hubba], [memo, ]…}
+
+# Query the one with the username 'hubba'
+Get-Secret ef2fe11d-b0a0-ed11-a876-005056bce948
+
+UserName                     Password
+--------                     --------
+hubba    System.Security.SecureString
+```
+For updating use `Set-Secret`:
+```Powershell
+Set-Secret -Secret (Get-Credential) -Name foo
+```
+Attention: If you use a `SecureString` secret only the password is updated, using a `PSCredential` secret updates the username, too.
+
+For adding a new secret you also use Set-Secret - Sometimes in the future, as it's currently under development.
+```Powershell
+# Adding not possible yet
+```
+
 <!-- ROADMAP -->
 ## Roadmap
 New features will be added if any of my scripts need it ;-)
 
-I cannot guarantee that no breaking change will occur as the development follows my internal DevOps need completely. Likewise I will not insert full documentation of all parameters as I don't have time for this copy&paste. Sorry. But major changes which classify as breaking changes will result in an increment of the major version. See [Changelog](FortigateManager\changelog.md) for information regarding breaking changes.
+The main focus of this module is to get access to our internal Password Servers. As the system is quite easy to customize (see [Internal Concepts](#internal-concepts)) I'd bet it might not be usable for your installation. If running into problems [open a new issue](https://github.com/Callidus2000/SecretManagement.NetwrixPasswordSecure/issues), I try to look into it.
+
+I cannot guarantee that no breaking change will occur as the development follows my internal DevOps need completely. Likewise I will not insert full documentation of all parameters as I don't have time for this copy&paste. Sorry. But major changes which classify as breaking changes will result in an increment of the major version. See [Changelog](SecretManagement.NetwrixPasswordSecure/changelog.md) for information regarding breaking changes.
 
 See the [open issues](https://github.com/Callidus2000/SecretManagement.NetwrixPasswordSecure/issues) for a list of proposed features (and known issues).
 
@@ -243,15 +210,12 @@ Short stop:
 
 
 ## Limitations
-* The module works on the ADOM level as this is the only permission set I've been granted
 * Maybe there are some inconsistencies in the docs, which may result in a mere copy/paste marathon from my other projects
 
 <!-- LICENSE -->
 ## License
 
 Distributed under the GNU GENERAL PUBLIC LICENSE version 3. See `LICENSE.md` for more information.
-
-
 
 <!-- CONTACT -->
 ## Contact
