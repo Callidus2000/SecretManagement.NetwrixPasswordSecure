@@ -29,7 +29,7 @@
   </a>
 -->
 
-  <h3 align="center">SecretManagement PowerShell Extensin for Netwrix PasswordSecure</h3>
+  <h3 align="center">SecretManagement PowerShell Extension for Netwrix PasswordSecure</h3>
 
   <p align="center">
     This Powershell Module is an extension to the <a href="https://github.com/PowerShell/SecretManagement">Microsoft Secret Management Module</a>
