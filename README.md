@@ -116,11 +116,19 @@ Import-Module SecretManagement.NetwrixPasswordSecure
 WARNING: [15:47:39][<Unknown>] Required Assemblies (like PsrAPI.dll) are missing in the folder 'C:\Users\root\Documents\PowerShell\Modules\SecretManagement.NetwrixPasswordSecure\1.0.0\SecretManagement.NetwrixPasswordSecure.Extension\bin'. They are provided for *Enterprise* cutomers by the product vendor on request. Please unzip all provided *.DLL within this folder
 ```
 ### Internal Concepts
+The solution is not only focused on security but also on customizability. For understanding some configuration/usage scenarios you need to know the basics.
+
+#### Password Forms
+The administrator of the server can configure multiple password forms which can be used by the regular user to store secrets in a standardized manner. Each named form defines named fields of different types. E.g. a regular credential form may consist of 'username' and 'password' fields while a form for a physical server adds information about the 'root ssh key' and the password for the BIOS or ILO interface. For the secret management extension it's necessary to know which fields belong directly to the secret itself or are just additional (meta) information which do not have to be kept secret.
+
 #### Password Container
-Every entry is a container.
+Every password entry is a container. Each password container can be derived from a password form or be built from ground up without any standard. The password container has child items which represent the named fields (see [Password Container](#password-container)).
 
 #### Organizational Units (OU)
-Which is grouped in OUs
+All password containers are grouped in hierarchical groups called organizations. Each organization has a type: 'Group' (for sharing information between users) and 'User' (most times only permissions for the named user himself.)
+
+### Combining all together                                     
+If the user wants to store a secret in to this solution he has to choose to which OU the new entry should belong (if no default is configured), which form to use and then he has to fill out all the necessary fields. If a secret is queried the extensions searches for an entry with the given name, tries to identify the base form of the container and them maps the field to the queried information type (credential, secret information, ..).
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -186,6 +194,10 @@ For adding a new secret you also use Set-Secret - Sometimes in the future, as it
 <!-- ROADMAP -->
 ## Roadmap
 New features will be added if any of my scripts need it ;-)
+### v1 - Released
+- Get Access to stored secrets by best guess approach which data is stored where
+### v2 - Under development
+The vaults should be as customizable as the password storage. Therefor a system will be developed which allows the configuration of provided password forms and field associations. To keep the effort for team/company usage as low as possible it will be possible to distribute this mapping information e.g. by GPO and registry settings.
 
 The main focus of this module is to get access to our internal Password Servers. As the system is quite easy to customize (see [Internal Concepts](#internal-concepts)) I'd bet it might not be usable for your installation. If running into problems [open a new issue](https://github.com/Callidus2000/SecretManagement.NetwrixPasswordSecure/issues), I try to look into it.
 
