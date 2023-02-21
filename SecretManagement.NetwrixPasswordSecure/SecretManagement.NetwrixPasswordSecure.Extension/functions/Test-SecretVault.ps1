@@ -93,13 +93,50 @@ function Test-SecretVault {
         Write-PSFMessage -Level Error $PSItem
         return $false
     }
-    if ($psrApi.SessionState -eq 'Connected'){
-        Write-PSFMessage "Saving vault for reuse"
-        Set-Variable -Name "Vault_$VaultName" -Scope Script -Value $psrApi
-        return $true
+    if ($psrApi.SessionState -ne 'Connected'){
+        #If we get this far something went wrong
+        Write-PSFMessage -Level Error "Unable to open connection to the server"
+        return $false
     }
-
-    #If we get this far something went wrong
-    Write-PSFMessage -Level Error "Unable to open connection to the server"
-    return $false
+    $formMappingConfigName = "SecretManagement.NetwrixPasswordSecure.Extension.FormMappings.$($AdditionalParameters.server).$($AdditionalParameters.Database)"
+    Write-PSFMessage "Checking Form-Mapping at PSFPath $formMappingConfigName"
+    $formMappingHash = Get-PSFConfigValue -FullName $formMappingConfigName
+    if ($null -eq $formMappingHash){
+        Write-PSFMessage "No Mapping found as PSFConfig, looking at additional Vault param"
+        $formMappingHash = $AdditionalParameters.forms
+    }
+    if ($null -eq $formMappingHash){
+        Write-PSFMessage "No Mapping found as additional parameter, generating Auto-Default"
+        try {
+            $metaData = Get-NetwrixMetaConfig -ExistingConnection $psrApi
+            $formMappingHash = $metaData.formMapping
+        }
+        catch {
+            Write-PSFMessage -Level Error "Could not create/query metadata"
+            return $false
+        }
+    }
+    if ($formMappingHash){
+        Write-PSFMessage "Mapping found, Type $($formMappingHash.GetType())"
+        if ($formMappingHash -is [String]){
+            Write-PSFMessage "Converting JSON String to HashTable"
+            try {
+                $formMappingHash=$formMappingHash | ConvertFrom-Json | ConvertTo-PSFHashtable
+            }
+            catch {
+                Write-PSFMessage -Level Error "Could not convert json to HashTable"
+                return $false
+            }
+        }
+        $allForms = @() + $formMappingHash.Values
+        foreach ($form in $allForms) {
+            if (-not $formMappingHash.ContainsKey("$($form.id)")) { $formMappingHash."$($form.id)"=$form}
+            if (-not $formMappingHash.ContainsKey("$($form.formname)")) { $formMappingHash."$($form.formname)" = $form }
+        }
+    }
+    Write-PSFMessage "Saving form mapping for later use: $($formMappingHash|ConvertTo-Json -Compress)"
+    Set-PSFConfig -Module "SecretManagement.NetwrixPasswordSecure.Extension" -name "FormMappings.$($AdditionalParameters.server).$($AdditionalParameters.Database)" -Value $formMappingHash -Initialize
+    Write-PSFMessage "Saving vault for reuse"
+    Set-Variable -Name "Vault_$VaultName" -Scope Script -Value $psrApi
+    return $true
 }

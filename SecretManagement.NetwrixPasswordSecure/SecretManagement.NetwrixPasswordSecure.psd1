@@ -45,6 +45,7 @@
 
 	# Functions to export from this module
 	FunctionsToExport = @(
+		'Get-NetwrixMetaConfig'
 		'Register-NetwrixSecureVault'
 	)
 
