@@ -84,7 +84,6 @@
 
     $availableForms = $conMan.GetContainerList([PsrApi.Data.Enums.PsrContainerType]::Form, $formListFilter) | wait-task
     foreach ($form in $availableForms) {
-        $ouHash = $ou | ConvertTo-PSFHashtable -Include @( 'id', '__type', 'Description') -Remap @{"__type" = 'type' }
         $formHash = $form | ConvertTo-PSFHashtable -Include @( 'name', 'id', '__type', 'Description') -Remap @{"__type" = 'type' }
         $formHash.fields = $form.items | ConvertTo-PSFHashtable -Include @( 'name', 'id', 'ContainerItemType', 'Description', "Mandatory") -Remap @{"ContainerItemType" = 'type' }
         $formHash.fields | ForEach-Object { $_.type = ([PsrApi.Data.Enums.PsrContainerItemType]$_.type).ToString() }
@@ -93,32 +92,7 @@
         $formHash.name = $name
         Write-PSFMessage "OU= $($form|ConvertTo-Json)" -Level Verbose
         $metaStructure.formStructure.$name = $formHash
-        $mappingHash = [ordered]@{}
-        $metaStructure.formMapping."$($formHash.id)" = $mappingHash
-        $mappingHash.formName = $name
-        $mappingHash.id = $formHash.id
-        $mappingHash.fields = @{}
-        $passwordFound = $false
-        foreach ($field in $formHash.fields) {
-            switch ($field.type) {
-                ContainerItemHeader { $mapToProperty = "SecretMetaData" }
-                ContainerItemIp { $mapToProperty = "SecretMetaData" }
-                ContainerItemMemo { $mapToProperty = "SecretMetaData" }
-                ContainerItemPassword {
-                    if (-not $passwordFound) {
-                        $mapToProperty = "Password"
-                        $passwordFound = $true
-                    }
-                    else { $mapToProperty = "ignore" }
-                }
-                ContainerItemText { $mapToProperty = "SecretMetaData" }
-                ContainerItemUserName { $mapToProperty = "UserName" }
-            }
-            $mappingHash.fields."$($field.id)" = @{
-                fieldName      = $Field.name
-                secretProperty = $mapToProperty
-            }
-        }
+        $metaStructure.formMapping."$($formHash.id)" = ConvertTo-NetwrixFormMapping $Form
     }
     $metaStructure.availableFields = $metaStructure.formStructure.Values.fields | ForEach-Object { [pscustomobject]$_ | Select-Object name, type, Description } | Sort-Object -Property name, type -Unique
     Write-PSFMessage "$`metaStructure.type=$($metaStructure.GetType())"
