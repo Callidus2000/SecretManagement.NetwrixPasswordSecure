@@ -45,12 +45,14 @@
     if ($AdditionalParameters.Verbose) { $VerbosePreference = 'continue' }
 
     Write-PSFMessage "Get-Secret, Name=$Name, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
-    $credentials = Get-NetwrixContainer -Filter $Name -VaultName $VaultName -AdditionalParameters $AdditionalParameters -ReturnType Secret
-    if ($credentials.Count -gt 1) {
+    $secret = Get-NetwrixContainer -Filter $Name -VaultName $VaultName -AdditionalParameters $AdditionalParameters -ReturnType Secret
+    Write-PSFMessage "Found `$secret=$($secret.gettype())"
+    # Write-PSFMessage "Found `$secret=$($secret|ConvertTo-Json -Compress -Depth 4)"
+    if ($secret.Count -gt 1 -and $secret -isnot [hashtable]) {
         Write-PSFMessage -Level Error 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id'
         Wait-PSFMessage
         throw 'Multiple credentials found; Search with Get-SecretInfo and require the correct one by *.MetaData.id'
     }
-    return $credentials | Select-Object -First 1
+    return $secret | Select-Object -First 1
 }
 

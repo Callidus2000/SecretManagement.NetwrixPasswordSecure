@@ -97,7 +97,7 @@
                             $containerWithSecretValue = $ContainerManager.GetContainerItemWithSecretValue($child.id ) | Wait-Task
                             $decryptedPassword = $ContainerManager.DecryptContainerItem($containerWithSecretValue, "some reason for query by API") | Wait-Task
                             # Convert to SecureString
-                            [securestring]$secStringPassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force
+                            [securestring]$secStringPassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force -ErrorAction SilentlyContinue
 
                             if ($secretDataHash.secretType -ne $hashTable) {
                                 $secretDataHash.secret.password = $secStringPassword
