@@ -98,7 +98,7 @@ function Test-SecretVault {
         Write-PSFMessage -Level Error "Unable to open connection to the server"
         return $false
     }
-    $formMappingConfigName = "SecretManagement.NetwrixPasswordSecure.Extension.FormMappings.$($AdditionalParameters.server).$($AdditionalParameters.Database)"
+    $formMappingConfigName = "SecretManagement.NetwrixPasswordSecure.Extension.FormMappings.$($AdditionalParameters.server -replace '\.','_').$($AdditionalParameters.Database)"
     Write-PSFMessage "Checking Form-Mapping at PSFPath $formMappingConfigName"
     $formMappingHash = Get-PSFConfigValue -FullName $formMappingConfigName
     if ($null -eq $formMappingHash){
@@ -135,7 +135,8 @@ function Test-SecretVault {
         }
     }
     Write-PSFMessage "Saving form mapping for later use: $($formMappingHash|ConvertTo-Json -Compress)"
-    Set-PSFConfig -Module "SecretManagement.NetwrixPasswordSecure.Extension" -name "FormMappings.$($AdditionalParameters.server).$($AdditionalParameters.Database)" -Value $formMappingHash -Initialize
+
+    Set-PSFConfig -Module "SecretManagement.NetwrixPasswordSecure.Extension" -name "FormMappings.$($AdditionalParameters.server -replace '\.','_').$($AdditionalParameters.Database)" -Value $formMappingHash -Initialize
     Write-PSFMessage "Saving vault for reuse"
     Set-Variable -Name "Vault_$VaultName" -Scope Script -Value $psrApi
     return $true

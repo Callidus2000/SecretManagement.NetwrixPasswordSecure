@@ -45,7 +45,7 @@
                 }
             }
             if ($userNameFound -and $passwordFound){
-                $mappingHash.secretType="credential"
+                $mappingHash.secretType="pscredential"
             }else{
                 $mappingHash.secretType="securestring"
             }
