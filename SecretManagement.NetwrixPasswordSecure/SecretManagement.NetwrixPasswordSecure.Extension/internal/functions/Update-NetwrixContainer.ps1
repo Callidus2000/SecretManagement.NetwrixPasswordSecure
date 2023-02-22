@@ -69,7 +69,7 @@
         Write-PSFMessage "Updating Container.id=$($container.id), .name=$($container.Info.ContainerName)"
     }else{
         Write-PSFMessage "Found NOPassword containers for filter $Name, creating new"
-        $allOUs = Get-NetwrixOU -VaultName $VaultName -AdditionalParameters $AdditionalParameters
+        $allOUs = Get-NetwrixOU -ExistingConnection $psrApi
         $allForms = Get-NetwrixForms -VaultName $VaultName -AdditionalParameters $AdditionalParameters
 
         $pattern = '(?<OU>.+)\|(?<FormName>.+)\|(?<NewEntryName>.+)'

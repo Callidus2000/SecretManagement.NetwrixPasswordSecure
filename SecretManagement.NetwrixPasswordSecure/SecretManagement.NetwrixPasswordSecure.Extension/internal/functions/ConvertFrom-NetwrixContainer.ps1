@@ -95,8 +95,7 @@
                         if ($BuildSecret) {
                             Write-PSFMessage "Building SecureString"
                             $containerWithSecretValue = $ContainerManager.GetContainerItemWithSecretValue($child.id ) | Wait-Task
-                            # TODO Generalize OU Name
-                            $decryptedPassword = $ContainerManager.DecryptContainerItem($containerWithSecretValue, "API Test") | Wait-Task
+                            $decryptedPassword = $ContainerManager.DecryptContainerItem($containerWithSecretValue, "some reason for query by API") | Wait-Task
                             # Convert to SecureString
                             [securestring]$secStringPassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force
 
