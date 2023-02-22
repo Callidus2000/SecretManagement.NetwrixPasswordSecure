@@ -45,6 +45,7 @@
 
 	# Functions to export from this module
 	FunctionsToExport = @(
+		'ConvertTo-NetwrixFormMapping'
 		'Get-NetwrixMetaConfig'
 		'Register-NetwrixSecureVault'
 	)

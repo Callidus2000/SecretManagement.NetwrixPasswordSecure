@@ -39,11 +39,12 @@
         [Parameter(Mandatory)]
         [string]$Database,
         [Parameter(Mandatory)]
-        [string]$UserName
+        [string]$UserName,
+        $FormMapping
     )
     $myModulePath = "$ModuleRoot\SecretManagement.NetwrixPasswordSecure.psd1"
     $psdData=Import-PowerShellDataFile $myModulePath
-    $additionalParameter = $PSBoundParameters | ConvertTo-PSFHashtable -Include "database","port","userName" ,"server" -Inherit
+    $additionalParameter = $PSBoundParameters | ConvertTo-PSFHashtable -Include "database","port","userName" ,"server","formMapping" -Inherit
     $additionalParameter.version=$psdData.ModuleVersion
     Write-PSFMessage "Registering Vault $vault with Param $($additionalParameter|ConvertTo-Json -Compress) and Module $myModulePath, Version $($psdData.ModuleVersion)"
     Register-SecretVault -Name $vaultName -ModuleName $myModulePath -VaultParameters $additionalParameter

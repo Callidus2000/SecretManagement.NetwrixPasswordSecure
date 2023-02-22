@@ -103,7 +103,7 @@ function Test-SecretVault {
     $formMappingHash = Get-PSFConfigValue -FullName $formMappingConfigName
     if ($null -eq $formMappingHash){
         Write-PSFMessage "No Mapping found as PSFConfig, looking at additional Vault param"
-        $formMappingHash = $AdditionalParameters.forms
+        $formMappingHash = $AdditionalParameters.formMapping
     }
     if ($null -eq $formMappingHash){
         Write-PSFMessage "No Mapping found as additional parameter, generating Auto-Default"
@@ -138,5 +138,6 @@ function Test-SecretVault {
     Set-PSFConfig -Module "SecretManagement.NetwrixPasswordSecure.Extension" -name "FormMappings.$($AdditionalParameters.server).$($AdditionalParameters.Database)" -Value $formMappingHash -Initialize
     Write-PSFMessage "Saving vault for reuse"
     Set-Variable -Name "Vault_$VaultName" -Scope Script -Value $psrApi
+    ConvertTo-NetwrixFormMapping
     return $true
 }
