@@ -66,6 +66,11 @@ if ($importIndividualFiles)
 		. Import-ModuleFile -Path $function.FullName
 	}
 
+	# Import all internal functions which are shared between the Extension and the Main-Module
+	foreach ($function in (Get-ChildItem "$ModuleRoot\SecretManagement.NetwrixPasswordSecure.Extension\functions.sharedinternal" -Filter "*.ps1" -Recurse -ErrorAction Ignore)) {
+		. Import-ModuleFile -Path $function.FullName
+	}
+
 	# Import all public functions
 	foreach ($function in (Get-ChildItem "$ModuleRoot\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore))
 	{
