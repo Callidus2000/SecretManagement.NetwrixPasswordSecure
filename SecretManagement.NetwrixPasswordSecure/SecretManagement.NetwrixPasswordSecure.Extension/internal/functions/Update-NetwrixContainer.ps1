@@ -49,6 +49,7 @@
         [securestring]$NewPassword
     )
     Write-PSFMessage "Update-NetwrixContainer, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
+    $AdditionalParameters = @{} + $AdditionalParameters
 
     if (-not (Test-SecretVault -VaultName $vaultName -AdditionalParameters $AdditionalParameters)) {
         Write-PSFMessage -Level Error "${vaultName}: Failed to unlock the vault"
@@ -68,9 +69,9 @@
         Write-PSFMessage "Found Password containers for filter $Name"
         Write-PSFMessage "Updating Container.id=$($container.id), .name=$($container.Info.ContainerName)"
     }else{
-        Write-PSFMessage "Found NOPassword containers for filter $Name, creating new"
-        $allOUs = Get-NetwrixOU -ExistingConnection $psrApi
-        $allForms = Get-NetwrixForms -VaultName $VaultName -AdditionalParameters $AdditionalParameters
+        Write-PSFMessage "Found NO Password containers for filter $Name, creating new"
+        $allOUs = Get-NetwrixOU -ExistingConnection $psrApi -verbose
+        $formMappingHash = Get-NetwrixPSFConfigValue -VaultName $VaultName -AdditionalParameters $AdditionalParameters -subPath FormMappings
 
         $pattern = '(?<OU>.+)\|(?<FormName>.+)\|(?<NewEntryName>.+)'
         if ($Name -match $pattern) {
@@ -82,7 +83,16 @@
             Write-PSFMessage "Name does not match '<OU>|<FormName>|<NewEntryName>', fallback to configured defaults"
             $newEntryName=$Name
         }
-        $chosenForm = $allForms.$formName
+        # Write-PSFMessage "`$AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
+        # Write-PSFMessage "`$formMappingConfigName=$formMappingConfigName"
+        Write-PSFMessage "`$formName=$formName"
+        Write-PSFMessage "`$ouName=$ouName"
+        Write-PSFMessage "`$newEntryName=$newEntryName"
+        # Write-PSFMessage "`$formMappingHash=$($formMappingHash|ConvertTo-Json -Compress)"
+        $formMapping = $formMappingHash.$formName
+        $ou=$allOUs.$ouName
+        Write-PSFMessage "`$ou=$ou"
+        Write-PSFMessage "`$formMapping=$($formMapping|ConvertTo-Json -Compress)"
     }
 
     # foreach ($child in $container.Items) {

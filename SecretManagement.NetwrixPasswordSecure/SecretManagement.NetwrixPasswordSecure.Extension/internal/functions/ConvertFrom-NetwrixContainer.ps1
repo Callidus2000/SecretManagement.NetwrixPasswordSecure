@@ -41,8 +41,7 @@
         $ContainerManager = $ExistingConnection.ContainerManager
         $Containers = @()
         $results = @()
-        $formMappingConfigName = "SecretManagement.NetwrixPasswordSecure.Extension.FormMappings.$($AdditionalParameters.server -replace '\.','_').$($AdditionalParameters.Database)"
-        $formsMapping = Get-PSFConfigValue -FullName $formMappingConfigName
+        $formsMapping = Get-NetwrixPSFConfigValue -VaultName $VaultName -AdditionalParameters $AdditionalParameters -subPath FormMappings
     }
 
     Process {

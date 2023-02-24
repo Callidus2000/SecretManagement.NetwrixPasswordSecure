@@ -35,6 +35,8 @@
         [string] $VaultName,
         [hashtable] $AdditionalParameters
     )
+    $AdditionalParameters = @{} + $AdditionalParameters
+    if ($AdditionalParameters.Verbose) { $VerbosePreference = 'continue' }
     $updateParam = $PSBoundParameters | ConvertTo-PSFHashtable -Exclude 'Secret'
     if ($Secret -is [securestring]) {
         $updateParam.NewPassword = $Secret

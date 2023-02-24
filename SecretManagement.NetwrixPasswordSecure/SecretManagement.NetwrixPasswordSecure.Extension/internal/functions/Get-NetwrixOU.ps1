@@ -30,7 +30,7 @@
     $ouFilter = [PsrApi.Data.PsrListFilter]::new()
     $ouFilter.DataStates = [PsrApi.Data.Enums.PsrDataStates]::StateActive
     $ouGroups = $ouMan.GetOrganisationUnitStructure($ouFilter) | Wait-Task
-    Write-PSFMessage "`$ouGroups=$($ouGroups|ConvertTo-Json -Compress -Depth 5)"
+    Write-PSFMessage "`$ouGroups=$($ouGroups|ConvertTo-Json -Compress -Depth 5)" -Level Debug
     $ouHash = @{}
     foreach ($ou in $ouGroups) {
         switch ($ou.OrganisationUnit."__type") {
@@ -39,4 +39,6 @@
         }
         $ouHash.$name = $ou
     }
+    Write-PSFMessage "Found the following OU-Names: $($ouHash.Keys|ConvertTo-Json -Compress)"
+    return $ouHash
 }
