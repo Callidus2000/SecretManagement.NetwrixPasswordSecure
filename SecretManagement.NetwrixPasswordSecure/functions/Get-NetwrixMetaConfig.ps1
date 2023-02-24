@@ -85,7 +85,7 @@
     $availableForms = $conMan.GetContainerList([PsrApi.Data.Enums.PsrContainerType]::Form, $formListFilter) | wait-task
     foreach ($form in $availableForms) {
         $formHash = $form | ConvertTo-PSFHashtable -Include @( 'name', 'id', '__type', 'Description') -Remap @{"__type" = 'type' }
-        $formHash.fields = $form.items | ConvertTo-PSFHashtable -Include @( 'name', 'id', 'ContainerItemType', 'Description', "Mandatory") -Remap @{"ContainerItemType" = 'type' }
+        $formHash.fields = $form.items | ConvertTo-PSFHashtable -Include @( 'name', 'id', 'ContainerItemType', 'Description', "Mandatory", "Position") -Remap @{"ContainerItemType" = 'type' }
         $formHash.fields | ForEach-Object { $_.type = ([PsrApi.Data.Enums.PsrContainerItemType]$_.type).ToString() }
         $name = $form.Name
         $metaStructure.availableForms += $name

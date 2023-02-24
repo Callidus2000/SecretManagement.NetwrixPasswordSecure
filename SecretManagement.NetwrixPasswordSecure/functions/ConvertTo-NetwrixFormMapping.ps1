@@ -18,6 +18,11 @@
             $passwordFound = $false
             $userNameFound=$false
             foreach ($field in $form.items) {
+                if ($field.Position -eq 0) {
+                    Write-PSFMessage -Level Host "Name-ID: $($field.id)"
+                    $mappingHash.nameId=$field.id
+                }
+
                 switch ($field.ContainerItemType) {
                     ContainerItemHeader { $mapToProperty = "SecretMetaData" }
                     ContainerItemIp { $mapToProperty = "SecretMetaData" }

@@ -41,13 +41,12 @@
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessforStateChangingFunctions', '')]
     param (
         [String]$Name,
+        [String]$NewName,
         [string]$VaultName,
         [hashtable]$AdditionalParameters,
-        [String]$NewUserName,
-        [String]$NewMemo,
-        [String]$NewText,
-        [securestring]$NewPassword
-    )
+        [hashtable]$MetaData,
+        $Secret
+        )
     Write-PSFMessage "Update-NetwrixContainer, $VaultName, AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
     $AdditionalParameters = @{} + $AdditionalParameters
 
@@ -68,8 +67,10 @@
     if($containerCount -eq 1){
         Write-PSFMessage "Found Password containers for filter $Name"
         Write-PSFMessage "Updating Container.id=$($container.id), .name=$($container.Info.ContainerName)"
+        $conManMode='Update'
     }else{
         Write-PSFMessage "Found NO Password containers for filter $Name, creating new"
+        $conManMode='Add'
         $allOUs = Get-NetwrixOU -ExistingConnection $psrApi -verbose
         $formMappingHash = Get-NetwrixPSFConfigValue -VaultName $VaultName -AdditionalParameters $AdditionalParameters -subPath FormMappings
 
@@ -105,6 +106,58 @@
             Write-PSFMessage -Level Error "The form '$formName' does not exist in this instance"
             Wait-PSFMessage
             throw "The form '$formName' does not exist in this instance"
+        }
+        $passwordForm=Get-NetwrixForm -ExistingConnection $psrApi -Name $formName
+        $container = $conMan.CreateContainerFromBaseContainer($passwordForm, [PsrApi.Data.Enums.PsrContainerType]::Password)
+        $container.name = $newEntryName
+    }
+    # Write-PSFMessage "$($container|ConvertTo-Json -Depth 4)"
+    # Gather all form elements with new values
+    $reAssignHashmap=@{
+        "$($formMapping.nameId)" = $container.name
+    }
+    $passwordId = $formMapping.fields.values | Where-Object secretproperty -eq 'Password' | Select-Object -ExpandProperty id | Select-Object -ExpandProperty guid
+    if($Secret -is [pscredential]){
+        $userNameId = $formMapping.fields.values | Where-Object secretproperty -eq 'UserName' | Select-Object -ExpandProperty id | Select-Object -ExpandProperty guid
+        $reAssignHashmap.$userNameId = $Secret.username
+        $reAssignHashmap.$passwordId = $Secret.password
+    }
+    elseif ($Secret -is [securestring]) {
+        $reAssignHashmap.$passwordId = $Secret
+    }
+    elseif ($Secret -is [hashtable]) {
+        if ($MetaData) { $MetaData = $MetaData + $Secret }else { $MetaData=$Secret}
+    }else{
+        Write-PSFMessage -Level Error "Unsupported Secret Type '$($Secret.GetType())'"
+        Wait-PSFMessage
+        throw "Unsupported Secret Type '$($Secret.GetType())'"
+    }
+    if ($null -ne $MetaData){
+        # TODO Infos müssen übernommen werden!
+        Write-PSFMessage "Adding SecretInfo MetaData to the entry"
+        if (-not [string]::IsNullOrEmpty($NewName)){
+            Write-PSFMessage "Rename entry from '$($container.name)' to '$NewName'"
+            $container.name=$NewName
+        }
+    }
+    Write-PSFMessage "`$reAssignHashmap=$($reAssignHashmap|ConvertTo-Json -Compress)"
+    foreach ($key in $reAssignHashmap.Keys){
+        $conItem=$container.items|Where-Object id -eq $key
+        switch ($conItem.ContainerItemType){
+            ContainerItemPassword { $conItem.PlainTextValue = ConvertFrom-SecureString -AsPlainText $reAssignHashmap.$key }
+            Default {
+                # TODO There are other properties as well
+                 $conItem.Value = $reAssignHashmap.$key
+                }
+        }
+    }
+    # return
+    switch($conManMode) {
+        'Update'{
+            $conMan.UpdateContainer($container) | Wait-Task
+        }
+        'Add'{
+            $conMan.AddContainer($container, $ou.OrganisationUnit.id, $null, $null) | wait-task
         }
     }
 

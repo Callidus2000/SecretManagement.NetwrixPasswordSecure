@@ -37,14 +37,14 @@
     )
     $AdditionalParameters = @{} + $AdditionalParameters
     if ($AdditionalParameters.Verbose) { $VerbosePreference = 'continue' }
-    $updateParam = $PSBoundParameters | ConvertTo-PSFHashtable -Exclude 'Secret'
-    if ($Secret -is [securestring]) {
-        $updateParam.NewPassword = $Secret
-    }
-    elseif ($Secret -is [pscredential]) {
-        $updateParam.NewPassword = $Secret.password
-        $updateParam.NewUsername = $Secret.Username
-    }
+    $updateParam = $PSBoundParameters | ConvertTo-PSFHashtable #-Exclude 'Secret'
+    # if ($Secret -is [securestring]) {
+    #     $updateParam.NewPassword = $Secret
+    # }
+    # elseif ($Secret -is [pscredential]) {
+    #     $updateParam.NewPassword = $Secret.password
+    #     $updateParam.NewUsername = $Secret.Username
+    # }
     Write-PSFMessage "#Setting secret with `$updateParam=$($updateParam|ConvertTo-Json -Compress)"
     Update-NetwrixContainer @updateParam
     Wait-PSFMessage

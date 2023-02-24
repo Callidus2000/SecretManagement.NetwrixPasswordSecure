@@ -188,7 +188,9 @@ Attention: If you use a `SecureString` secret only the password is updated, usin
 
 For adding a new secret you also use Set-Secret - Sometimes in the future, as it's currently under development.
 ```Powershell
-# Adding not possible yet
+Set-Secret -Verbose -Vault $Vaultname -Secret $myNewSecret -Name "MUrks"
+Set-Secret -Verbose -Vault $Vaultname -Secret $myNewSecret -Name "API\MUrks 2"
+Set-Secret -Verbose -Vault $Vaultname -Secret $myNewSecret -Name "API\MUrks 3|Passwort"
 ```
 
 <!-- ROADMAP -->
