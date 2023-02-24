@@ -9,7 +9,7 @@
     }
 
     process {
-        # Write-PSFMessage -Level Host "########### HUUUUUBBBBBAAAA #########"
+        # Write-PSFMessage "########### HUUUUUBBBBBAAAA #########"
         foreach ($form in $SourceDefinition) {
             $mappingHash = [ordered]@{}
             $mappingHash.formName = $name
@@ -19,7 +19,7 @@
             $userNameFound=$false
             foreach ($field in $form.items) {
                 if ($field.Position -eq 0) {
-                    Write-PSFMessage -Level Host "Name-ID: $($field.id)"
+                    Write-PSFMessage "Name-ID: $($field.id)"
                     $mappingHash.nameId=$field.id
                 }
 
