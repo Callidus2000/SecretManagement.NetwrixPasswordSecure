@@ -73,7 +73,8 @@
         $allOUs = Get-NetwrixOU -ExistingConnection $psrApi -verbose
         $formMappingHash = Get-NetwrixPSFConfigValue -VaultName $VaultName -AdditionalParameters $AdditionalParameters -subPath FormMappings
 
-        $pattern = '(?<OU>.+)\|(?<FormName>.+)\|(?<NewEntryName>.+)'
+        # $pattern = '(?<OU>.+)\\(?<NewEntryName>.+)\|(?<FormName>.+)'
+        $pattern = '^(?>(?<OU>.+)\\)?(?<NewEntryName>[^\|]+)(?>\|(?<FormName>.+))?$'
         if ($Name -match $pattern) {
             $regMatches=Select-String -InputObject $Name -Pattern $pattern | Select-Object -ExpandProperty Matches
             $ouName=$regMatches.Groups['OU'].Value
@@ -85,6 +86,8 @@
         }
         # Write-PSFMessage "`$AdditionalParameters=$($AdditionalParameters|ConvertTo-Json -Compress)"
         # Write-PSFMessage "`$formMappingConfigName=$formMappingConfigName"
+        if ([string]::IsNullOrEmpty($ouName)) { $ouName = Get-NetwrixPSFConfigValue -VaultName $VaultName -AdditionalParameters $AdditionalParameters -subPath "Default.OU" }
+        if ([string]::IsNullOrEmpty($formName)) { $formName = Get-NetwrixPSFConfigValue -VaultName $VaultName -AdditionalParameters $AdditionalParameters -subPath "Default.Form" }
         Write-PSFMessage "`$formName=$formName"
         Write-PSFMessage "`$ouName=$ouName"
         Write-PSFMessage "`$newEntryName=$newEntryName"
@@ -93,6 +96,16 @@
         $ou=$allOUs.$ouName
         Write-PSFMessage "`$ou=$ou"
         Write-PSFMessage "`$formMapping=$($formMapping|ConvertTo-Json -Compress)"
+        if($null -eq $ou){
+            Write-PSFMessage -Level Error "The OU '$ouName' does not exist in this instance"
+            Wait-PSFMessage
+            throw "The OU '$ouName' does not exist in this instance"
+        }
+        if ($null -eq $formMapping) {
+            Write-PSFMessage -Level Error "The form '$formName' does not exist in this instance"
+            Wait-PSFMessage
+            throw "The form '$formName' does not exist in this instance"
+        }
     }
 
     # foreach ($child in $container.Items) {
