@@ -36,7 +36,7 @@
         [string] $Filter,
         [string] $VaultName,
         [hashtable] $AdditionalParameters,
-        [ValidateSet('SecretInformation', 'NonModifiedContainer', 'Credential', 'MetaHash')]
+        [ValidateSet('SecretInformation', 'NonModifiedContainer', 'Secret', 'MetaHash')]
         [string]$ReturnType
     )
     $AdditionalParameters = @{} + $AdditionalParameters
@@ -66,17 +66,18 @@
         }
 
         $containers = $conMan.GetContainerList([PsrApi.Data.Enums.PsrContainerType]::Password, $passwordListFilter, $null) | Wait-Task | Where-Object { $_.Info.ContainerName -like $filter }
+        # Write-PSFMessage -Level Host "Container: $($containers|ConvertTo-Json -Compress -Depth 5)"
     }
     Write-PSFMessage "Found $($containers.Count) Password containers for filter $filter"
     switch ($ReturnType) {
         'SecretInformation' {
             Write-PSFMessage "Converting results to type SecretInformation"
-            $results = $containers | Convert-NetwrixContainer2Object -ContainerManager $conMan -AsSecretInformation -Verbose
+            $results = $containers | ConvertFrom-NetwrixContainer -ExistingConnection $psrApi -AsSecretInformation -Verbose
             Write-PSFMessage "`$results= $($results), Type $($results.GetType())"
             return $results
         }
         'NonModifiedContainer' { $containers }
-        'Credential' { $containers | Convert-NetwrixContainer2Object -ContainerManager $conMan -IncludeCredential | Select-Object -ExpandProperty Credential }
-        'MetaHash' { $containers | Convert-NetwrixContainer2Object -ContainerManager $conMan }
+        'Secret' { $containers | ConvertFrom-NetwrixContainer -ExistingConnection $psrApi -BuildSecret | Select-Object -ExpandProperty Secret }
+        'MetaHash' { $containers | ConvertFrom-NetwrixContainer -ExistingConnection $psrApi }
     }
 }

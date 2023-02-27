@@ -93,13 +93,13 @@ function Test-SecretVault {
         Write-PSFMessage -Level Error $PSItem
         return $false
     }
-    if ($psrApi.SessionState -eq 'Connected'){
-        Write-PSFMessage "Saving vault for reuse"
-        Set-Variable -Name "Vault_$VaultName" -Scope Script -Value $psrApi
-        return $true
+    if ($psrApi.SessionState -ne 'Connected'){
+        #If we get this far something went wrong
+        Write-PSFMessage -Level Error "Unable to open connection to the server"
+        return $false
     }
-
-    #If we get this far something went wrong
-    Write-PSFMessage -Level Error "Unable to open connection to the server"
-    return $false
+    Initialize-NetwrixDefaultConfiguration -AdditionalParameters $AdditionalParameters -VaultName $VaultName -ExistingConnection $psrApi
+    Write-PSFMessage "Saving vault for reuse"
+    Set-Variable -Name "Vault_$VaultName" -Scope Script -Value $psrApi
+    return $true
 }

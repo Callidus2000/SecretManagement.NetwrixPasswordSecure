@@ -34,7 +34,10 @@
     End {
         try {
             While (-not [System.Threading.Tasks.Task]::WaitAll($Tasks, 200)) {}
-            $Tasks.ForEach( { $_.GetAwaiter().GetResult() })
+            $Tasks.ForEach( {
+                    $result = $_.GetAwaiter().GetResult()
+                    if ($null -ne $result) { $result }
+                })
         }
         catch {
             # Write-PSFMessage -Level Host "$_"
@@ -46,4 +49,4 @@
     }
 }
 
-Set-Alias -Name await -Value Wait-Task -Force
+Set-Alias -Name await -Value Wait-Task -Force | Out-Null

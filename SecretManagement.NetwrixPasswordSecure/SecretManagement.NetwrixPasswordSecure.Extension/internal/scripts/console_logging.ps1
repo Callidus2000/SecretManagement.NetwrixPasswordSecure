@@ -1,4 +1,5 @@
-﻿if(Get-PSFConfigValue -FullName 'SecretManagement.NetwrixPasswordSecure.Extension.ConsoleLogging.enabled' -Fallback $false){
+﻿# TODO Alternative logging to be created
+if(Get-PSFConfigValue -FullName 'SecretManagement.NetwrixPasswordSecure.Extension.ConsoleLogging.enabled' -Fallback $false){
     Write-PSFMessage "Configure Console Logging"
     $providerParam=@{
         Name="console"

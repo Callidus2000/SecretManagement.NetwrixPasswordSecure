@@ -1,5 +1,4 @@
-﻿#TODO Level ändern
-Write-PSFMessage -Level Host "Running SecretManagement.NetwrixPasswordSecure.psm1"
+﻿Write-PSFMessage "Running SecretManagement.NetwrixPasswordSecure.psm1"
 $script:ModuleRoot = $PSScriptRoot
 $script:ModuleVersion = (Import-PowerShellDataFile -Path "$($script:ModuleRoot)\SecretManagement.NetwrixPasswordSecure.psd1").ModuleVersion
 
@@ -63,6 +62,11 @@ if ($importIndividualFiles)
 	# Import all internal functions
 	foreach ($function in (Get-ChildItem "$ModuleRoot\internal\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore))
 	{
+		. Import-ModuleFile -Path $function.FullName
+	}
+
+	# Import all internal functions which are shared between the Extension and the Main-Module
+	foreach ($function in (Get-ChildItem "$ModuleRoot\SecretManagement.NetwrixPasswordSecure.Extension\functions.sharedinternal" -Filter "*.ps1" -Recurse -ErrorAction Ignore)) {
 		. Import-ModuleFile -Path $function.FullName
 	}
 
