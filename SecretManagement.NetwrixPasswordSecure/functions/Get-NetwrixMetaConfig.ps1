@@ -46,7 +46,7 @@
     Write-PSFMessage "Query Meta Structure ob Password Safe"
     switch ($PSCmdlet.ParameterSetName) {
         "directConnection" {
-            $global:psrApi = [PsrApi.PsrApi]::new("$($Server):$($Port)")
+            $psrApi = [PsrApi.PsrApi]::new("$($Server):$($Port)")
             $psrApi.authenticationManager.login($Database, $Credential.UserName, $Credential.GetNetworkCredential().password) | Wait-Task -Debug
         }
         "alreadyConnected" { $psrApi = $ExistingConnection }

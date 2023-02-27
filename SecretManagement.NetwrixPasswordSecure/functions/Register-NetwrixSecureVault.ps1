@@ -33,10 +33,25 @@
     .PARAMETER FormMapping
     The manual configured form mapping.
 
+    .PARAMETER InterActive
+    If this switch is used the user can interactively choose (via Out-GridView) an existing config from the installed Windows Client.
+
     .EXAMPLE
     Register-NetwrixSecureVault -VaultName myVault -Server myserver -Database PWDB -UserName fred
 
     Registers the given vault.
+    .EXAMPLE
+    Register-NetwrixSecureVault -VaultName myVault -Interactive
+
+    Shows all preconfigured connections and stores it with the name myVault.
+    .EXAMPLE
+    Register-NetwrixSecureVault -Interactive
+
+    Shows all preconfigured connections and stores it with the name of the database connection.
+    .EXAMPLE
+    Register-NetwrixSecureVault -Interactive -WhatIf
+
+    Shows all preconfigured connections and show the commands necessary to configure it manually.
 
     .NOTES
     General notes
@@ -140,5 +155,6 @@
     }
     else {
         Write-PSFMessage -Level Host "WhatIf used, no vault registered."
+        Write-PSFMessage -Level Host "You may register the chosen vault later with the following command:`r`n@registerParam=$($registerParam|ConvertTo-Metadata -AsHashtable)`r`nRegister-SecretVault @registerParam"
     }
 }

@@ -1,5 +1,24 @@
 ﻿function ConvertTo-NetwrixFormMapping {
+    <#
+    .SYNOPSIS
+    Internal converter for converting a Source Definition to a form mapping.
+
+    .DESCRIPTION
+    Internal converter for converting a Source Definition to a form mapping.
+
+    .PARAMETER SourceDefinition
+    The input definition
+
+    .EXAMPLE
+    An example
+
+    has to be provided
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
+    [OutputType([OrderedDictionary])]
     param (
         [Parameter(Position = 0, Mandatory, ValueFromPipeline)]
         $SourceDefinition

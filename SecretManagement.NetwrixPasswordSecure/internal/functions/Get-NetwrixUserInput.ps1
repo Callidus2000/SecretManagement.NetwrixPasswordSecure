@@ -28,9 +28,9 @@
     )
 
     if ($Default) { $Title += " [$Default]" }
-    $input = Read-Host -Prompt $Title
-    if ([string]::IsNullOrWhiteSpace($input) -and -not [string]::IsNullOrWhiteSpace($Default)) {
+    $userInput = Read-Host -Prompt $Title
+    if ([string]::IsNullOrWhiteSpace($userInput) -and -not [string]::IsNullOrWhiteSpace($Default)) {
         return $Default
     }
-    return $input
+    return $userInput
 }
