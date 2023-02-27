@@ -46,7 +46,6 @@
 
 	# Functions to export from this module
 	FunctionsToExport = @(
-		'ConvertTo-NetwrixFormMapping'
 		'Get-NetwrixMetaConfig'
 		'Register-NetwrixSecureVault'
 	)
@@ -73,7 +72,7 @@
 		PSData = @{
 
 			# Tags applied to this module. These help with module discovery in online galleries.
-			Tags = 'SecretManagement', 'Netwrix', 'Mateso', 'SecretVault', 'Vault', 'Secret', 'Password Secure', 'PWSafe'
+			Tags = 'SecretManagement', 'Netwrix', 'Mateso', 'SecretVault', 'Vault', 'Secret', 'PasswordSecure', 'PWSafe'
 			# Tags = @()
 
 			# A URL to the license for this module.

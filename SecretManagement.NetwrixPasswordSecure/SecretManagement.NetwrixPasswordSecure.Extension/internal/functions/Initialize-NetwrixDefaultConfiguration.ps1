@@ -15,10 +15,11 @@
     }
     Write-PSFMessage "Initializing configuration for vault $VaultName"
     try {
-        $metaData = Get-NetwrixMetaConfig -ExistingConnection $psrApi
+        $metaData = Get-NetwrixMetaConfig -ExistingConnection $ExistingConnection
     }
     catch {
-        Write-PSFMessage -Level Error "Could not create/query metadata"
+        Write-PSFMessage -Level Error "Could not create/query metadata $_" -Tag CONERR -ErrorRecord $_
+        # Write-PSFMessage -Level Error "`$ExistingConnection=$($ExistingConnection|ConvertTo-Json -Compress -EnumsAsStrings)" -Tag CONERR
         throw "Could not create/query metadata"
     }
     #region Initialize password form mappings

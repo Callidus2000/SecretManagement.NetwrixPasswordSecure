@@ -70,7 +70,7 @@
             MtoOrganisationUnitUser { $ouHash.name = $ou.UserName }
             MtoOrganisationUnitGroup { $ouHash.name = $ou.GroupName }
         }
-        Write-PSFMessage "OU= $($ou|ConvertTo-Json)" -Level Debug
+        Write-PSFMessage "OU= $($ou|ConvertTo-Json -Compress)" -Level Debug
         if ($ou.ParentDataBindings) {
             $ouHash.parentId = $ou.ParentDataBindings.ParentDataId
         }

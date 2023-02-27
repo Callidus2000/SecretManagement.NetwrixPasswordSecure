@@ -36,6 +36,12 @@
     .PARAMETER InterActive
     If this switch is used the user can interactively choose (via Out-GridView) an existing config from the installed Windows Client.
 
+    .PARAMETER Confirm
+    Not respected
+
+    .PARAMETER WhatIf
+    If used, the vault will not be registered but the register command will be printed
+
     .EXAMPLE
     Register-NetwrixSecureVault -VaultName myVault -Server myserver -Database PWDB -UserName fred
 
@@ -60,7 +66,7 @@
     param (
 
         [parameter(mandatory = $true, ParameterSetName = "cmdLine")]
-        [parameter(mandatory = $false, ParameterSetName = "interactive")]
+        [parameter(mandatory = $true, ParameterSetName = "interactiveWithRename")]
         [string]$VaultName,
         [parameter(mandatory = $true, ParameterSetName = "cmdLine")]
         [string]$Server,
@@ -76,6 +82,7 @@
         [parameter(mandatory = $false, ParameterSetName = "cmdLine")]
         $FormMapping,
         [parameter(mandatory = $true, ParameterSetName = "interactive")]
+        [parameter(mandatory = $true, ParameterSetName = "interactiveWithRename")]
         [switch]$InterActive
     )
 

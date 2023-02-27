@@ -18,7 +18,7 @@
     General notes
     #>
     [CmdletBinding()]
-    [OutputType([OrderedDictionary])]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseOutputTypeCorrectly', '')]
     param (
         [Parameter(Position = 0, Mandatory, ValueFromPipeline)]
         $SourceDefinition
