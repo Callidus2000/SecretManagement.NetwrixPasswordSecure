@@ -41,34 +41,104 @@
     .NOTES
     General notes
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(Mandatory)]
+
+        [parameter(mandatory = $true, ParameterSetName = "cmdLine")]
+        [parameter(mandatory = $false, ParameterSetName = "interactive")]
         [string]$VaultName,
-        [Parameter(Mandatory)]
+        [parameter(mandatory = $true, ParameterSetName = "cmdLine")]
         [string]$Server,
         [string]$Port = "11016",
-        [Parameter(Mandatory)]
+        [parameter(mandatory = $true, ParameterSetName = "cmdLine")]
         [string]$Database,
-        [Parameter(Mandatory)]
+        [parameter(mandatory = $true, ParameterSetName = "cmdLine")]
         [string]$UserName,
+        [parameter(mandatory = $false, ParameterSetName = "cmdLine")]
         [string]$defaultOUName,
+        [parameter(mandatory = $false, ParameterSetName = "cmdLine")]
         [string]$defaultFormName,
-        $FormMapping
+        [parameter(mandatory = $false, ParameterSetName = "cmdLine")]
+        $FormMapping,
+        [parameter(mandatory = $true, ParameterSetName = "interactive")]
+        [switch]$InterActive
     )
+
     $myModulePath = "$ModuleRoot\SecretManagement.NetwrixPasswordSecure.psd1"
     $psdData = Import-PowerShellDataFile $myModulePath
-    $additionalParameter = $PSBoundParameters | ConvertTo-PSFHashtable -Inherit -Include @(
-        'Server'
-        'Port'
-        'Database'
-        'UserName'
-        'defaultOUName'
-        'defaultFormName'
-        'FormMapping'
-    )
+    $registerParam = @{
+        ModuleName = Get-PSFConfigValue 'SecretManagement.NetwrixPasswordSecure.InterActiveRegister.modulepath'
+    }
+    if ($PSCmdlet.ParameterSetName -eq 'interactive') {
+        $registryLocations = Get-PSFConfigValue -FullName 'SecretManagement.NetwrixPasswordSecure.InterActiveRegister.registy'
+        $possibleVaults = @()
+        foreach ($regLoc in $registryLocations) {
+            $regVaultNames = Get-ChildItem $regLoc -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PSChildName
+
+            foreach ($regVaultName in $regVaultNames) {
+                $properties = Get-ItemProperty "$regLoc\$regVaultName"
+                # $settingsHash.vaultName=$vaultName
+                $possibleVaults += [PSCustomObject][ordered]@{
+                    VaultName = $regVaultName
+                    Server    = $properties.HostIP
+                    DataBase  = $properties.DataBaseName
+                }
+            }
+        }
+        $fileConfig = Get-PSFConfigValue -FullName 'SecretManagement.NetwrixPasswordSecure.InterActiveRegister.file'
+        if (Test-Path $fileConfig) {
+            $localConfig = Get-Content $fileConfig | ConvertFrom-Json | Select-Object -ExpandProperty DatabaseProfiles
+            foreach ($conf in $localConfig) {
+                $possibleVaults += [PSCustomObject][ordered]@{
+                    VaultName = $conf.ProfileName
+                    Server    = $conf.HostIP
+                    DataBase  = $conf.DataBaseName
+                }
+
+            }
+        }
+        $newVaultData = $possibleVaults | Sort-Object -Unique -Property VaultName | Out-GridView -OutputMode Single -Title "Choose which account should be added as a Secret Management Vault"
+        if ($null -eq $newVaultData) {
+            Write-PSFMessage -Level Warning "No data chosen, exit."
+            return
+        }
+        Write-PSFMessage "Using chosen data: $($newVaultData|ConvertTo-Json -Compress)"
+        if (-not [string]::IsNullOrWhiteSpace($VaultName)) { $newVaultData.vaultName=$VaultName}
+        $userName = Get-NetwrixUserInput -Title "Enter username for the new vault $($newVaultData.vaultName)" -Default $env:USERNAME
+        if ([string]::IsNullOrWhiteSpace($userName)) {
+            Write-PSFMessage -Level Warning "No username entered, cannot configure vault."
+            return
+        }
+        $registerParam.Name = $newVaultData.VaultName
+        $additionalParameter = @{
+            'Server'   = $newVaultData.Server
+            'Port'     = $Port
+            'Database' = $newVaultData.Database
+            'UserName' = $UserName
+        }
+    }
+    else {
+        $registerParam.Name =$VaultName
+        $additionalParameter = $PSBoundParameters | ConvertTo-PSFHashtable -Inherit -Include @(
+            'Server'
+            'Port'
+            'Database'
+            'UserName'
+            'defaultOUName'
+            'defaultFormName'
+            'FormMapping'
+        )
+        $additionalParameter.Port = $Port
+    }
+    $registerParam.VaultParameters = $additionalParameter
     $additionalParameter.version = $psdData.ModuleVersion
-    $additionalParameter.Port = $Port
-    Write-PSFMessage "Registering Vault $vault with Param $($additionalParameter|ConvertTo-Json -Compress) and Module $myModulePath, Version $($psdData.ModuleVersion)"
-    Register-SecretVault -Name $vaultName -ModuleName $myModulePath -VaultParameters $additionalParameter
+    if ($PSCmdlet.ShouldProcess($name)) {
+        Write-PSFMessage "Registering Vault $vault with Param $($registerParam|ConvertTo-Json -Compress)"
+        # Write-PSFMessage "Registering Vault $vault with Param $($additionalParameter|ConvertTo-Json -Compress) and Module $myModulePath, Version $($psdData.ModuleVersion)"
+        Register-SecretVault @registerParam
+        # Register-SecretVault -Name $vaultName -ModuleName $myModulePath -VaultParameters $additionalParameter
+    }
+    else {
+        Write-PSFMessage -Level Host "WhatIf used, no vault registered."
+    }
 }
