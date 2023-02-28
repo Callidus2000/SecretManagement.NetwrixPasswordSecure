@@ -3,7 +3,7 @@
 	RootModule        = 'SecretManagement.NetwrixPasswordSecure.psm1'
 
 	# Version number of this module.
-	ModuleVersion     = '2.0.0'
+	ModuleVersion     = '2.0.1'
 
 	# ID used to uniquely identify this module
 	GUID              = '0a89c2cb-0080-485b-be9a-9071eae98a11'

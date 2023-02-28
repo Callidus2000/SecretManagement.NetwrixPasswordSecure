@@ -6,17 +6,17 @@ Insert any build steps you may need to take before publishing it here.
 #>
 param (
 	$ApiKey,
-	
+
 	$WorkingDirectory,
-	
+
 	$Repository = 'PSGallery',
-	
+
 	[switch]
 	$LocalRepo,
-	
+
 	[switch]
 	$SkipPublish,
-	
+
 	[switch]
 	$AutoVersion
 )
@@ -46,10 +46,11 @@ $processed = @()
 foreach ($filePath in (& "$($PSScriptRoot)\..\SecretManagement.NetwrixPasswordSecure\internal\scripts\preimport.ps1"))
 {
 	if ([string]::IsNullOrWhiteSpace($filePath)) { continue }
-	
+
 	$item = Get-Item $filePath
 	if ($item.PSIsContainer) { continue }
 	if ($item.FullName -in $processed) { continue }
+	Write-PSFMessage -Level Verbose -Message " #1 Importing content from $($item.FullName)"
 	$text += [System.IO.File]::ReadAllText($item.FullName)
 	$processed += $item.FullName
 }
@@ -57,19 +58,26 @@ foreach ($filePath in (& "$($PSScriptRoot)\..\SecretManagement.NetwrixPasswordSe
 # Gather commands
 Get-ChildItem -Path "$($publishDir.FullName)\SecretManagement.NetwrixPasswordSecure\internal\functions\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
 	$text += [System.IO.File]::ReadAllText($_.FullName)
+	Write-PSFMessage -Level Verbose -Message " #2 Importing content from $($_.FullName)"
+}
+Get-ChildItem -Path "$($publishDir.FullName)\SecretManagement.NetwrixPasswordSecure\SecretManagement.NetwrixPasswordSecure.Extension\functions.sharedinternal\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
+	$text += [System.IO.File]::ReadAllText($_.FullName)
+	Write-PSFMessage -Level Verbose -Message " #3 Importing content from $($_.FullName)"
 }
 Get-ChildItem -Path "$($publishDir.FullName)\SecretManagement.NetwrixPasswordSecure\functions\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
 	$text += [System.IO.File]::ReadAllText($_.FullName)
+	Write-PSFMessage -Level Verbose -Message " #4 Importing content from $($_.FullName)"
 }
 
 # Gather stuff to run afterwards
 foreach ($filePath in (& "$($PSScriptRoot)\..\SecretManagement.NetwrixPasswordSecure\internal\scripts\postimport.ps1"))
 {
 	if ([string]::IsNullOrWhiteSpace($filePath)) { continue }
-	
+
 	$item = Get-Item $filePath
 	if ($item.PSIsContainer) { continue }
 	if ($item.FullName -in $processed) { continue }
+	Write-PSFMessage -Level Verbose -Message " #5 Importing content from $($item.FullName)"
 	$text += [System.IO.File]::ReadAllText($item.FullName)
 	$processed += $item.FullName
 }
